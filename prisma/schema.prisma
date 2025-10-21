@@ -1,0 +1,1104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("analyst") // analyst, strategist, executive
+  name         String
+  createdAt    DateTime @default(now())
+  lastLogin    DateTime?
+  
+  markets      Market[]
+  reports      Report[]
+  comments     Comment[]
+  preferences  UserPreferences?
+  breadcrumbs  InsightBreadcrumb[]
+  boards       Board[]
+  radars       Radar[]
+  strategySessions StrategySession[]
+  subscriptions        UserSubscription?
+  creditBalance        CreditBalance?
+  payments             Payment[]
+  orders               Order[]
+  invoices             Invoice[]
+  refunds              Refund[]
+  disputes             Dispute[]
+  marketplaceListings  MarketplaceListing[]
+  marketplacePurchases MarketplacePurchase[]
+  marketplaceReviews   MarketplaceReview[]
+  commissions          Commission[]
+  royaltyPayouts       RoyaltyPayout[]
+  referralLinks        ReferralLink[]
+  referralsGiven       Referral[]           @relation("ReferrerReferrals")
+  referralsReceived    Referral[]           @relation("ReferredReferrals")
+  featureAccess        FeatureAccess[]
+  auditLogs            AuditLog[]
+  blueOceanCanvases    BlueOceanCanvas[]
+  partnerships         Partnership[]
+  pitchDecks           PitchDeck[]
+  challengeSubmissions ChallengeSubmission[]
+  challengeVotes       ChallengeVote[]
+  userBadges           UserBadge[]
+  problems             Problem[]
+  problemSolutions     ProblemSolution[]
+  problemVotes         ProblemVote[]
+  crowdfundedIdeas     CrowdfundedIdea[]
+  investments          Investment[]
+  ecosystems           Ecosystem[]
+  ecosystemMemberships EcosystemMember[]
+  ecosystemMessages    EcosystemMessage[]
+}
+
+model UserPreferences {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  values          String   @db.Text // JSON array of user values
+  energyLevel     String   @default("balanced") // high, balanced, low
+  workStyle       String   @default("collaborative") // solo, collaborative, hybrid
+  riskTolerance   String   @default("medium") // low, medium, high
+  industryFocus   String?  @db.Text // JSON array of preferred industries
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InsightBreadcrumb {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  content     String   @db.Text
+  context     String?  @db.Text // Where it was captured (market, segment, etc)
+  tags        String?  @db.Text // JSON array of tags
+  marketId    Int?
+  resurfaced  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market      Market?  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+}
+
+model Market {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String   @db.Text
+  sector      String
+  createdAt   DateTime @default(now())
+  userId      Int
+  
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments    Segment[]
+  competitors Competitor[]
+  trends      Trend[]
+  breadcrumbs InsightBreadcrumb[]
+}
+
+model Segment {
+  id              Int      @id @default(autoincrement())
+  marketId        Int
+  name            String
+  characteristics String   @db.Text
+  size            Int?     // estimated market size
+  growth          Float?   // growth rate percentage
+  createdAt       DateTime @default(now())
+  
+  // Enhanced fields for dynamic segmentation
+  segmentType     String   @default("traditional") // traditional, behavioral, psychographic, jobs_to_be_done
+  behavioralTraits String? @db.Text // JSON array of behavioral characteristics
+  psychographics  String?  @db.Text // JSON object with psychographic data
+  jobsToBeDone    String?  @db.Text // JSON array of jobs to be done
+  isAiGenerated   Boolean  @default(false)
+  confidenceScore Float?   // 0-1 AI confidence in segment validity
+  dataSource      String?  // Source of segmentation data
+  
+  market          Market        @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  opportunities   Opportunity[]
+}
+
+model Competitor {
+  id          Int      @id @default(autoincrement())
+  marketId    Int
+  name        String
+  strengths   String   @db.Text
+  weaknesses  String   @db.Text
+  marketShare Float?
+  positioning String?  @db.Text
+  createdAt   DateTime @default(now())
+  
+  market      Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+}
+
+model Opportunity {
+  id          Int      @id @default(autoincrement())
+  segmentId   Int
+  title       String
+  description String   @db.Text
+  score       Float    @default(0)
+  risk        String   @default("medium") // low, medium, high
+  roi         Float?
+  revenue     Float?
+  entryBarrier String? @db.Text
+  strategicFit Float?
+  status      String   @default("identified") // identified, analyzing, approved, rejected
+  createdAt   DateTime @default(now())
+  
+  segment     Segment  @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  reports     Report[]
+  comments    Comment[]
+  insight     OpportunityInsight?
+  sourceConnections OpportunityConnection[] @relation("SourceConnections")
+  targetConnections OpportunityConnection[] @relation("TargetConnections")
+  boards      BoardOpportunity[]
+  scenarios   Scenario[]
+}
+
+model OpportunityInsight {
+  id                Int      @id @default(autoincrement())
+  opportunityId     Int      @unique
+  alignmentScore    Float?   // Vibe check score (0-100)
+  alignmentReason   String?  @db.Text
+  weirdnessScore    Float?   // "Follow the weird" score
+  anomalyNotes      String?  @db.Text
+  spiritAnimal      String?  // Archetype (wolf, dolphin, octopus, etc)
+  constellationTags String?  @db.Text // JSON array for grouping
+  aiSummary         String?  @db.Text
+  generatedAt       DateTime @default(now())
+  
+  opportunity       Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+}
+
+model OpportunityConnection {
+  id                  Int      @id @default(autoincrement())
+  sourceOpportunityId Int
+  targetOpportunityId Int
+  connectionType      String   // similar_market, complementary, competitive, cross_pollination
+  strength            Float    // 0-1
+  reasoning           String?  @db.Text
+  createdAt           DateTime @default(now())
+  
+  sourceOpportunity   Opportunity @relation("SourceConnections", fields: [sourceOpportunityId], references: [id], onDelete: Cascade)
+  targetOpportunity   Opportunity @relation("TargetConnections", fields: [targetOpportunityId], references: [id], onDelete: Cascade)
+  
+  @@unique([sourceOpportunityId, targetOpportunityId])
+}
+
+model Trend {
+  id             Int      @id @default(autoincrement())
+  marketId       Int
+  title          String
+  trendData      String   @db.Text // JSON data
+  sentimentScore Float?
+  source         String?
+  createdAt      DateTime @default(now())
+  
+  // Enhanced fields for synapse integration
+  trendType      String?  // economic, regulatory, technological, social, environmental
+  magnitude      Float?   // 0-1 impact magnitude
+  velocity       Float?   // Rate of change
+  semanticTags   String?  @db.Text // JSON array of semantic tags for linking
+  relatedTrends  String?  @db.Text // JSON array of related trend IDs
+  
+  market         Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  
+  @@index([marketId, createdAt])
+}
+
+model TrendIntersection {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String   @db.Text
+  trendIds          String   @db.Text // JSON array of Trend IDs involved
+  intersectionType  String   // convergence, collision, synergy, disruption
+  strength          Float    // 0-1 strength of intersection
+  reasoning         String   @db.Text // AI explanation of intersection
+  potentialImpact   String   @db.Text // AI-generated impact assessment
+  marketOpportunity String?  @db.Text // Suggested opportunity from intersection
+  isUnexpected      Boolean  @default(false) // AI-flagged as unexpected
+  createdAt         DateTime @default(now())
+  
+  @@index([createdAt])
+}
+
+model ValueMigration {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  description         String   @db.Text
+  fromIndustry        String   // Industry losing value
+  toIndustry          String   // Industry gaining value
+  migrationDrivers    String   @db.Text // JSON array of drivers (tech, regulatory, etc)
+  timeline            String   // short_term, medium_term, long_term
+  confidence          Float    // 0-1 AI confidence in prediction
+  impactAssessment    String   @db.Text // AI analysis of impact
+  opportunityWindow   String   @db.Text // When to act
+  relatedTrends       String?  @db.Text // JSON array of trend IDs
+  predictedMarketSize Float?   // Estimated market size of new space
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([createdAt])
+}
+
+model Report {
+  id            Int      @id @default(autoincrement())
+  opportunityId Int?
+  userId        Int
+  title         String
+  content       String   @db.Text
+  format        String   @default("markdown") // markdown, pdf
+  generatedAt   DateTime @default(now())
+  
+  // Enhanced fields for report broker
+  reportType    String   @default("standard") // standard, market_analysis, trend_report, opportunity_brief
+  pdfUrl        String?  // URL to PDF in Minio
+  isSubscription Boolean @default(false) // Part of subscription feed
+  isPaid        Boolean  @default(false) // One-time purchase
+  price         Float?   // Price if paid report
+  aiGenerated   Boolean  @default(false)
+  marketId      Int?     // Link to market for market reports
+  
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, generatedAt])
+  @@index([reportType, isSubscription])
+}
+
+// ============================================
+// CURATED CONTENT MODELS
+// ============================================
+
+model CuratedFeed {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String   @db.Text
+  feedType        String   // weekly_digest, investor_insights, trend_alerts, blue_ocean_opportunities
+  content         String   @db.Text // JSON with curated items
+  curatedBy       String   @default("ai") // ai, editorial, hybrid
+  qualityScore    Float    // AI-generated quality score
+  targetAudience  String?  // investors, strategists, executives, all
+  tags            String?  @db.Text // JSON array
+  viewCount       Int      @default(0)
+  publishedAt     DateTime @default(now())
+  
+  @@index([feedType, publishedAt])
+  @@index([targetAudience, publishedAt])
+}
+
+model Comment {
+  id            Int      @id @default(autoincrement())
+  opportunityId Int
+  userId        Int
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
+  
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Board {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String?  @db.Text
+  stage       String   @default("exploring") // exploring, validating, building, live
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunities BoardOpportunity[]
+}
+
+model BoardOpportunity {
+  id            Int      @id @default(autoincrement())
+  boardId       Int
+  opportunityId Int
+  notes         String?  @db.Text
+  addedAt       DateTime @default(now())
+  
+  board         Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  
+  @@unique([boardId, opportunityId])
+}
+
+// ============================================
+// ECOSYSTEM COLLABORATION MODELS
+// ============================================
+
+model Ecosystem {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String?  @db.Text
+  vision          String?  @db.Text // Shared vision statement
+  ownerId         Int      // Creator/owner
+  isPublic        Boolean  @default(false)
+  status          String   @default("forming") // forming, active, mature, archived
+  memberCount     Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members         EcosystemMember[]
+  opportunities   EcosystemOpportunity[]
+  messages        EcosystemMessage[]
+  deals           EcosystemDeal[]
+  
+  @@index([ownerId, status])
+  @@index([isPublic, status])
+}
+
+model EcosystemMember {
+  id              Int      @id @default(autoincrement())
+  ecosystemId     Int
+  userId          Int
+  role            String   @default("member") // owner, admin, member, contributor
+  contribution    String?  @db.Text // What they bring to ecosystem
+  joinedAt        DateTime @default(now())
+  
+  ecosystem       Ecosystem @relation(fields: [ecosystemId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([ecosystemId, userId])
+  @@index([userId])
+}
+
+model EcosystemOpportunity {
+  id              Int      @id @default(autoincrement())
+  ecosystemId     Int
+  opportunityId   Int
+  addedBy         Int      // User who added it
+  notes           String?  @db.Text
+  status          String   @default("exploring") // exploring, validating, pursuing, implemented
+  addedAt         DateTime @default(now())
+  
+  ecosystem       Ecosystem @relation(fields: [ecosystemId], references: [id], onDelete: Cascade)
+  
+  @@unique([ecosystemId, opportunityId])
+  @@index([ecosystemId, status])
+}
+
+model EcosystemMessage {
+  id              Int      @id @default(autoincrement())
+  ecosystemId     Int
+  userId          Int
+  content         String   @db.Text
+  messageType     String   @default("chat") // chat, announcement, proposal
+  createdAt       DateTime @default(now())
+  
+  ecosystem       Ecosystem @relation(fields: [ecosystemId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([ecosystemId, createdAt])
+}
+
+model EcosystemDeal {
+  id              Int      @id @default(autoincrement())
+  ecosystemId     Int
+  title           String
+  description     String   @db.Text
+  dealType        String   // partnership, revenue_share, joint_venture, licensing
+  parties         String   @db.Text // JSON array of member user IDs
+  terms           String?  @db.Text // Deal terms
+  value           Float?   // Deal value if applicable
+  status          String   @default("proposed") // proposed, negotiating, agreed, active, completed
+  createdAt       DateTime @default(now())
+  agreedAt        DateTime?
+  
+  ecosystem       Ecosystem @relation(fields: [ecosystemId], references: [id], onDelete: Cascade)
+  
+  @@index([ecosystemId, status])
+}
+
+model Radar {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  name            String
+  description     String?  @db.Text
+  criteria        String   @db.Text // JSON object with industries, maxCompetitors, minTAM, keywords, etc.
+  alertFrequency  String   @default("weekly") // realtime, daily, weekly
+  isActive        Boolean  @default(true)
+  lastChecked     DateTime?
+  matchCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  
+  // Enhanced fields for agentic discovery
+  aiAnalysisEnabled Boolean @default(false) // Enable AI-powered signal analysis
+  dataSources       String? @db.Text // JSON array of data sources: news, patents, funding, social
+  lastAiAnalysis    DateTime?
+  signalQuality     Float?  // 0-1 score of signal quality
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  radarSignals    RadarSignal[]
+}
+
+model RadarSignal {
+  id              Int      @id @default(autoincrement())
+  radarId         Int
+  signalType      String   // news, patent, funding, social_sentiment, market_shift
+  title           String
+  description     String   @db.Text
+  source          String   // URL or source identifier
+  sourceType      String   // news_api, patent_office, crunchbase, twitter, etc
+  relevanceScore  Float    // 0-1 AI-determined relevance
+  sentimentScore  Float?   // -1 to 1 sentiment analysis
+  metadata        String   @db.Text // JSON with additional signal data
+  isNovel         Boolean  @default(false) // AI-flagged as non-obvious/novel
+  createdAt       DateTime @default(now())
+  
+  radar           Radar    @relation(fields: [radarId], references: [id], onDelete: Cascade)
+  
+  @@index([radarId, createdAt])
+}
+
+model StrategySession {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  title       String   @default("Strategy Session")
+  messages    String   @db.Text // JSON array of {role, content} messages
+  context     String?  @db.Text // JSON array of opportunity IDs being discussed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Scenario {
+  id              Int      @id @default(autoincrement())
+  opportunityId   Int
+  name            String   // e.g., "Optimistic", "Pessimistic", "Realistic"
+  description     String?  @db.Text
+  
+  // Market assumptions
+  marketSize      Float?   // TAM in millions
+  marketGrowth    Float?   // Annual growth rate percentage
+  competitorCount Int?     // Number of competitors
+  
+  // Business model assumptions
+  pricing         Float?   // Price point
+  costStructure   Float?   // Cost as % of revenue
+  timeToMarket    Int?     // Months to launch
+  
+  // Projected outcomes
+  projectedRevenue    Float?   // Year 1 revenue projection
+  projectedMarketShare Float?  // Market share percentage
+  projectedROI        Float?   // Return on investment percentage
+  riskAssessment      String?  @db.Text // AI-generated risk analysis
+  keyAssumptions      String?  @db.Text // JSON array of key assumptions
+  
+  // Enhanced fields for cross-industry scenarios
+  isCrossIndustry     Boolean  @default(false)
+  sourceIndustries    String?  @db.Text // JSON array of industries analyzed
+  analogies           String?  @db.Text // JSON array of cross-industry analogies
+  lateralInsights     String?  @db.Text // JSON with lateral thinking insights
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  opportunity     Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// BLUE OCEAN STRATEGY MODELS
+// ============================================
+
+model BlueOceanCanvas {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  marketId        Int?
+  opportunityId   Int?
+  name            String
+  description     String?  @db.Text
+  
+  // ERRC Framework fields
+  eliminate       String   @db.Text // JSON array of factors to eliminate
+  reduce          String   @db.Text // JSON array of factors to reduce
+  raise           String   @db.Text // JSON array of factors to raise
+  create          String   @db.Text // JSON array of factors to create
+  
+  // Strategy Canvas data
+  strategyCanvas  String?  @db.Text // JSON with competitor comparison data
+  valueInnovation String?  @db.Text // AI-generated value innovation summary
+  
+  // Action plan
+  actionPlan      String?  @db.Text // JSON array of action items
+  timeline        String?  @db.Text // JSON with timeline data
+  
+  status          String   @default("draft") // draft, in_progress, completed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt])
+}
+
+model Partnership {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  name              String
+  description       String   @db.Text
+  partnerType       String   // cross_industry, complementary, ecosystem, platform
+  suggestedPartner  String   // Company or entity name
+  partnerIndustry   String
+  synergies         String   @db.Text // JSON array of synergy points
+  dataCompatibility String   @db.Text // JSON describing compatible data/capabilities
+  valueCreation     String   @db.Text // How partnership creates new value
+  implementationPath String? @db.Text // Steps to establish partnership
+  confidenceScore   Float    // 0-1 AI confidence
+  status            String   @default("suggested") // suggested, exploring, in_progress, established
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, status])
+}
+
+model PitchDeck {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  opportunityId   Int?
+  scenarioId      Int?
+  title           String
+  
+  // Pitch deck content (JSON with slide data)
+  slides          String   @db.Text // JSON array of slide objects
+  
+  // Metadata
+  format          String   @default("standard") // standard, investor, executive, detailed
+  theme           String   @default("professional") // professional, modern, creative
+  
+  // Storage
+  pdfUrl          String?  // URL to generated PDF in Minio
+  
+  // Generation metadata
+  generatedBy     String   @default("ai") // ai, manual, template
+  generationTime  Float?   // Time taken to generate in seconds
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt])
+}
+
+// ============================================
+// MONETIZATION & PAYMENT MODELS
+// ============================================
+
+model SubscriptionTier {
+  id              Int      @id @default(autoincrement())
+  name            String   // Free, Pro, Enterprise
+  description     String?  @db.Text
+  price           Float    // Monthly price in USD
+  features        String   @db.Text // JSON array of feature flags
+  creditsPerMonth Int      @default(0) // Monthly credit allocation
+  maxScenarios    Int?     // Null = unlimited
+  maxRadars       Int?
+  maxBoards       Int?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  subscriptions   UserSubscription[]
+}
+
+model UserSubscription {
+  id                Int              @id @default(autoincrement())
+  userId            Int              @unique
+  tierId            Int
+  status            String           @default("active") // active, cancelled, expired, past_due
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd Boolean          @default(false)
+  stripeSubscriptionId String?       @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier              SubscriptionTier @relation(fields: [tierId], references: [id])
+}
+
+model CreditBalance {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  balance         Int      @default(0)
+  lifetimeEarned  Int      @default(0)
+  lifetimeSpent   Int      @default(0)
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    CreditTransaction[]
+}
+
+model CreditTransaction {
+  id              Int      @id @default(autoincrement())
+  balanceId       Int
+  amount          Int      // Positive for credits added, negative for spent
+  type            String   // purchase, subscription_grant, referral_bonus, scenario_analysis, report_generation
+  description     String?  @db.Text
+  referenceId     String?  // Link to related entity (payment, scenario, etc)
+  createdAt       DateTime @default(now())
+  
+  balance         CreditBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  amount              Float    // Amount in USD
+  currency            String   @default("USD")
+  status              String   @default("pending") // pending, succeeded, failed, refunded
+  paymentMethod       String   // card, bank_transfer, etc
+  stripePaymentIntentId String? @unique
+  stripeChargeId      String?
+  metadata            String?  @db.Text // JSON for additional payment details
+  failureReason       String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order               Order?
+  refunds             Refund[]
+  invoices            Invoice[]
+}
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  paymentId       Int      @unique
+  userId          Int
+  type            String   // subscription, credits, marketplace_item, report
+  itemId          Int?     // Reference to purchased item
+  itemType        String?  // scenario_template, report, analytic_template
+  quantity        Int      @default(1)
+  totalAmount     Float
+  status          String   @default("pending") // pending, completed, cancelled
+  createdAt       DateTime @default(now())
+  
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id              Int      @id @default(autoincrement())
+  paymentId       Int
+  userId          Int
+  invoiceNumber   String   @unique
+  amount          Float
+  taxAmount       Float    @default(0)
+  totalAmount     Float
+  status          String   @default("draft") // draft, sent, paid, void
+  dueDate         DateTime?
+  paidAt          DateTime?
+  invoiceUrl      String?  // URL to PDF stored in Minio
+  metadata        String?  @db.Text // JSON for billing details
+  createdAt       DateTime @default(now())
+  
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Refund {
+  id              Int      @id @default(autoincrement())
+  paymentId       Int
+  userId          Int
+  amount          Float
+  reason          String   @db.Text
+  status          String   @default("pending") // pending, approved, rejected, processed
+  stripeRefundId  String?  @unique
+  processedAt     DateTime?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Dispute {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  orderId         Int?
+  type            String   // payment_dispute, marketplace_dispute, service_complaint
+  description     String   @db.Text
+  status          String   @default("open") // open, investigating, resolved, closed
+  resolution      String?  @db.Text
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// MARKETPLACE MODELS
+// ============================================
+
+model MarketplaceListing {
+  id              Int      @id @default(autoincrement())
+  sellerId        Int      // User who created the listing
+  type            String   // scenario_template, analytic_template, expert_report, opportunity_nft
+  itemId          Int      // Reference to the actual item
+  title           String
+  description     String   @db.Text
+  price           Float
+  currency        String   @default("USD")
+  category        String?  // Strategy, Market Analysis, Trend Forecasting, etc
+  tags            String?  @db.Text // JSON array
+  previewUrl      String?  // Preview content URL
+  isActive        Boolean  @default(true)
+  totalSales      Int      @default(0)
+  totalRevenue    Float    @default(0)
+  averageRating   Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // NFT support fields
+  isNFT           Boolean  @default(false)
+  nftTokenId      String?  // Blockchain token ID
+  nftContractAddress String? // Smart contract address
+  nftMetadataUrl  String?  // IPFS or metadata URL
+  isUnique        Boolean  @default(false) // True for 1-of-1 NFTs
+  editionSize     Int?     // Total editions for limited NFTs
+  
+  seller          User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  purchases       MarketplacePurchase[]
+  reviews         MarketplaceReview[]
+  commissions     Commission[]
+}
+
+model MarketplacePurchase {
+  id              Int      @id @default(autoincrement())
+  listingId       Int
+  buyerId         Int
+  price           Float
+  status          String   @default("completed") // completed, refunded
+  accessGranted   Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  listing         MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer           User               @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+}
+
+model MarketplaceReview {
+  id              Int      @id @default(autoincrement())
+  listingId       Int
+  userId          Int
+  rating          Int      // 1-5 stars
+  comment         String?  @db.Text
+  isVerifiedPurchase Boolean @default(false)
+  createdAt       DateTime @default(now())
+  
+  listing         MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([listingId, userId])
+}
+
+model Commission {
+  id              Int      @id @default(autoincrement())
+  listingId       Int
+  sellerId        Int      // The expert/contributor earning commission
+  saleAmount      Float
+  commissionRate  Float    // Percentage (e.g., 0.70 for 70%)
+  commissionAmount Float
+  status          String   @default("pending") // pending, approved, paid
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+  
+  listing         MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  seller          User               @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model RoyaltyPayout {
+  id              Int      @id @default(autoincrement())
+  userId          Int      // Contributor receiving payout
+  amount          Float
+  period          String   // e.g., "2024-01", monthly period
+  itemCount       Int      // Number of items sold
+  status          String   @default("pending") // pending, processing, completed, failed
+  paymentMethod   String?  // bank_transfer, paypal, etc
+  paymentDetails  String?  @db.Text // JSON with payment info
+  processedAt     DateTime?
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// REFERRAL & AFFILIATE MODELS
+// ============================================
+
+model ReferralLink {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  code            String   @unique
+  clickCount      Int      @default(0)
+  conversionCount Int      @default(0)
+  totalEarnings   Float    @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals       Referral[]
+}
+
+model Referral {
+  id              Int      @id @default(autoincrement())
+  linkId          Int
+  referrerId      Int      // User who referred
+  referredUserId  Int?     // User who signed up (null until signup)
+  status          String   @default("pending") // pending, converted, rewarded
+  rewardAmount    Float?
+  rewardType      String?  // credits, discount, cash
+  createdAt       DateTime @default(now())
+  convertedAt     DateTime?
+  
+  link            ReferralLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  referrer        User         @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser    User?        @relation("ReferredReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// FEATURE ACCESS & AUDIT MODELS
+// ============================================
+
+model FeatureAccess {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  featureName     String   // scenario_comparison, ai_insights, export_pdf, etc
+  accessType      String   // subscription, one_time_purchase, credits
+  expiresAt       DateTime?
+  usageCount      Int      @default(0)
+  usageLimit      Int?     // Null = unlimited
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, featureName])
+}
+
+model AuditLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  action          String   // viewed_scenario, edited_scenario, purchased_item, etc
+  entityType      String?  // scenario, report, marketplace_listing
+  entityId        Int?
+  details         String?  @db.Text // JSON with additional context
+  ipAddress       String?
+  userAgent       String?  @db.Text
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+}
+
+// ============================================
+// GAMIFICATION MODELS
+// ============================================
+
+model Challenge {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String   @db.Text
+  challengeType   String   // blue_ocean_scenario, market_discovery, value_innovation
+  criteria        String   @db.Text // JSON with evaluation criteria
+  prize           Int      // Credits to award
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("active") // active, judging, completed
+  winnerId        Int?
+  participantCount Int     @default(0)
+  createdAt       DateTime @default(now())
+  
+  submissions     ChallengeSubmission[]
+  
+  @@index([status, endDate])
+}
+
+model ChallengeSubmission {
+  id              Int      @id @default(autoincrement())
+  challengeId     Int
+  userId          Int
+  scenarioId      Int?     // Link to submitted scenario
+  title           String
+  description     String   @db.Text
+  content         String   @db.Text // JSON with submission data
+  voteCount       Int      @default(0)
+  expertScore     Float?   // 0-100 score from expert judges
+  peerScore       Float?   // 0-100 average peer score
+  isWinner        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  
+  challenge       Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes           ChallengeVote[]
+  
+  @@unique([challengeId, userId])
+  @@index([challengeId, voteCount])
+}
+
+model ChallengeVote {
+  id              Int      @id @default(autoincrement())
+  submissionId    Int
+  voterId         Int
+  score           Int      // 1-5 stars
+  comment         String?  @db.Text
+  createdAt       DateTime @default(now())
+  
+  submission      ChallengeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  voter           User                @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  
+  @@unique([submissionId, voterId])
+}
+
+model Badge {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String   @db.Text
+  iconUrl         String?
+  category        String   // discovery, innovation, collaboration, expertise
+  criteria        String   @db.Text // JSON with earning criteria
+  rarity          String   @default("common") // common, rare, epic, legendary
+  createdAt       DateTime @default(now())
+  
+  userBadges      UserBadge[]
+}
+
+model UserBadge {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  badgeId         Int
+  earnedAt        DateTime @default(now())
+  reason          String?  @db.Text
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge           Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, badgeId])
+}
+
+// ============================================
+// PROBLEM CROWDSOURCING MODELS
+// ============================================
+
+model Problem {
+  id              Int      @id @default(autoincrement())
+  userId          Int      // User who posted the problem
+  title           String
+  description     String   @db.Text
+  category        String   // market_gap, technical_challenge, business_model, etc
+  bounty          Int      // Credits offered as reward
+  industry        String?
+  tags            String?  @db.Text // JSON array
+  status          String   @default("open") // open, in_progress, solved, closed
+  winningSolutionId Int?   // Reference to winning solution
+  viewCount       Int      @default(0)
+  solutionCount   Int      @default(0)
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  solutions       ProblemSolution[]
+  
+  @@index([status, createdAt])
+  @@index([category, status])
+}
+
+model ProblemSolution {
+  id              Int      @id @default(autoincrement())
+  problemId       Int
+  userId          Int
+  title           String
+  description     String   @db.Text
+  approach        String   @db.Text // Detailed solution approach
+  scenarioId      Int?     // Link to scenario if applicable
+  opportunityId   Int?     // Link to opportunity if applicable
+  voteCount       Int      @default(0)
+  aiScore         Float?   // AI-generated quality score
+  isWinner        Boolean  @default(false)
+  rewardPaid      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  
+  problem         Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes           ProblemVote[]
+  
+  @@unique([problemId, userId])
+  @@index([problemId, voteCount])
+}
+
+model ProblemVote {
+  id              Int      @id @default(autoincrement())
+  solutionId      Int
+  voterId         Int
+  score           Int      // 1-5 stars
+  comment         String?  @db.Text
+  createdAt       DateTime @default(now())
+  
+  solution        ProblemSolution @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  voter           User            @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  
+  @@unique([solutionId, voterId])
+}
+
+// ============================================
+// CROWDFUNDING MODELS
+// ============================================
+
+model CrowdfundedIdea {
+  id              Int      @id @default(autoincrement())
+  userId          Int      // Idea creator
+  opportunityId   Int?     // Link to opportunity if applicable
+  scenarioId      Int?     // Link to scenario if applicable
+  title           String
+  description     String   @db.Text
+  pitch           String   @db.Text // Full pitch content
+  fundingGoal     Float    // Target funding amount
+  currentFunding  Float    @default(0)
+  minInvestment   Float    // Minimum investment amount
+  maxInvestment   Float?   // Maximum investment per investor
+  equity          Float?   // Equity percentage offered
+  status          String   @default("active") // active, funded, closed, cancelled
+  investorCount   Int      @default(0)
+  aiRiskScore     Float?   // AI-generated risk assessment (0-1)
+  aiReturnEstimate Float?  // AI-estimated return percentage
+  category        String?
+  tags            String?  @db.Text // JSON array
+  deadline        DateTime?
+  createdAt       DateTime @default(now())
+  fundedAt        DateTime?
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments     Investment[]
+  
+  @@index([status, createdAt])
+  @@index([category, status])
+}
+
+model Investment {
+  id              Int      @id @default(autoincrement())
+  ideaId          Int
+  investorId      Int
+  amount          Float
+  status          String   @default("pending") // pending, confirmed, refunded
+  paymentId       Int?     // Link to payment
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  confirmedAt     DateTime?
+  
+  idea            CrowdfundedIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  investor        User            @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  
+  @@index([ideaId, status])
+  @@index([investorId, createdAt])
+}
