@@ -289,7 +289,7 @@ ls -la docs/IMPLEMENTATION_SUMMARY.md
 # Run these commands to verify Railway readiness
 
 # 1. Check package.json is valid JSON
-cat package.json | python3 -m json.tool > /dev/null 2>&1 && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
+node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))" > /dev/null 2>&1 && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
 
 # 2. Check for build script
 grep -q '"build"' package.json && echo "✓ Build script exists" || echo "✗ Missing build script"
