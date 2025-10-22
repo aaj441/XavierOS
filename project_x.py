@@ -120,19 +120,31 @@ class ProjectX:
 
         # Create EPUB chapters
         epub_chapters = []
-        spine = ['nav']
+        spine = []
 
         for idx, chapter in enumerate(sorted_chapters, 1):
-            # Clean and format HTML content
-            content_html = self._format_chapter_html(chapter.content, chapter.title)
-
             # Create EPUB chapter
             epub_chapter = epub.EpubHtml(
                 title=chapter.title,
                 file_name=f'chapter_{idx}.xhtml',
                 lang=metadata.language
             )
-            epub_chapter.content = content_html
+            
+            # Set content directly with proper HTML structure
+            epub_chapter.content = f"""<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+    <title>{chapter.title}</title>
+    <link rel="stylesheet" type="text/css" href="../style/nav.css"/>
+</head>
+<body>
+    <h1>{chapter.title}</h1>
+    <div class="chapter-content">
+        {chapter.content}
+    </div>
+</body>
+</html>"""
 
             # Add chapter to book
             book.add_item(epub_chapter)
@@ -149,16 +161,14 @@ class ProjectX:
         )
         book.add_item(nav_css)
 
-        # Add navigation files
+        # Add navigation files (simplified to avoid compatibility issues)
         if enable_toc:
             book.toc = tuple(epub_chapters)
 
         if enable_ncx:
             book.add_item(epub.EpubNcx())
 
-        book.add_item(epub.EpubNav())
-
-        # Set spine
+        # Set spine without nav to avoid compatibility issues
         book.spine = spine
 
         # Generate EPUB file
@@ -193,7 +203,7 @@ class ProjectX:
 <body>
     <h1>{title}</h1>
     <div class="chapter-content">
-        {soup.prettify()}
+        {content}
     </div>
 </body>
 </html>"""
@@ -339,6 +349,15 @@ class ProjectX:
             eBookResponse with generated file
         """
         try:
+            # Validate input
+            if not chapters or len(chapters) == 0:
+                return eBookResponse(
+                    success=False,
+                    message="At least one chapter is required",
+                    filename="",
+                    format=format
+                )
+            
             if format.lower() == "epub":
                 file_data = self.generate_epub(metadata, chapters, enable_toc, enable_ncx)
                 filename = f"{metadata.title.replace(' ', '_')}.epub"
