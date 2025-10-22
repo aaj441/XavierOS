@@ -1,27 +1,23 @@
 #!/bin/bash
 
-# XavierOS Start Script
-# This script ensures the application starts correctly
-
-echo "🚀 Starting XavierOS..."
+# A5 Browser Use FastAPI Start Script
+echo "🚀 Starting A5 Browser Use FastAPI Application..."
 
 # Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: package.json not found. Are we in the right directory?"
+if [ ! -f "main.py" ]; then
+    echo "❌ Error: main.py not found. Are we in the right directory?"
     exit 1
 fi
 
-# Install dependencies if node_modules doesn't exist
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    pnpm install
+if [ ! -f "requirements.txt" ]; then
+    echo "❌ Error: requirements.txt not found."
+    exit 1
 fi
 
-# Generate Prisma client
-echo "🔧 Generating Prisma client..."
-pnpm prisma generate
+# Install dependencies if needed
+echo "📦 Installing Python dependencies..."
+pip install -r requirements.txt
 
-# Start the application
-echo "🌟 Starting XavierOS application..."
-pnpm start
-
+# Start the FastAPI application
+echo "🌐 Starting FastAPI server..."
+uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1

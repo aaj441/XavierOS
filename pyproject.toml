@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "a5-browser-use-fastapi"
+version = "0.1.0"
+description = "A5 Browser Use FastAPI Application"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.6",
+    "python-dotenv==1.0.1",
+    "langchain==0.3.14",
+    "browser-use==0.1.21",
+    "pydantic==2.10.5",
+    "openai===1.59.5",
+    "langchain-openai==0.2.14",
+    "langchain-ollama==0.2.2",
+    "langchain-google-genai==2.0.8",
+    "uvicorn==0.22.0"
+]
+
+[project.scripts]
+start = "uvicorn main:app --host 0.0.0.0 --port 8000"
