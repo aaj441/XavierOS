@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project X - eBook Generator | XavierOS</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/projectx.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-book"></i>
+                <h1>Project X</h1>
+            </div>
+            <p class="tagline">Kindle-friendly eBook Generator</p>
+            <nav class="nav">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a>
+                <a href="/lucy" class="nav-link">
+                    <i class="fas fa-universal-access"></i>
+                    Lucy
+                </a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="projectx-container">
+                <!-- Form Section -->
+                <div class="form-section">
+                    <h2>Generate Your eBook</h2>
+                    <p>Fill in the details below to create a professional eBook in EPUB format.</p>
+                    
+                    <form id="ebook-form" class="ebook-form">
+                        <!-- Metadata Section -->
+                        <div class="form-section-header">
+                            <h3><i class="fas fa-info-circle"></i> Book Information</h3>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="title">Book Title *</label>
+                                <input type="text" id="title" name="title" required placeholder="Enter book title">
+                            </div>
+                            <div class="form-group">
+                                <label for="author">Author *</label>
+                                <input type="text" id="author" name="author" required placeholder="Enter author name">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="language">Language</label>
+                                <select id="language" name="language">
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="it">Italian</option>
+                                    <option value="pt">Portuguese</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="publisher">Publisher</label>
+                                <input type="text" id="publisher" name="publisher" placeholder="Enter publisher name">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" rows="3" placeholder="Enter book description"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="isbn">ISBN</label>
+                            <input type="text" id="isbn" name="isbn" placeholder="Enter ISBN (optional)">
+                        </div>
+
+                        <!-- Chapters Section -->
+                        <div class="form-section-header">
+                            <h3><i class="fas fa-list"></i> Chapters</h3>
+                            <button type="button" id="add-chapter" class="add-chapter-btn">
+                                <i class="fas fa-plus"></i>
+                                Add Chapter
+                            </button>
+                        </div>
+                        
+                        <div id="chapters-container" class="chapters-container">
+                            <!-- Chapters will be added here dynamically -->
+                        </div>
+
+                        <!-- Options Section -->
+                        <div class="form-section-header">
+                            <h3><i class="fas fa-cog"></i> Generation Options</h3>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="format">Format</label>
+                                <select id="format" name="format">
+                                    <option value="epub">EPUB (Recommended)</option>
+                                    <option value="mobi">MOBI (Kindle)</option>
+                                    <option value="azw3">AZW3 (Enhanced Kindle)</option>
+                                </select>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="enable_toc" name="enable_toc" checked>
+                                    <span class="checkmark"></span>
+                                    Include Table of Contents
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enable_ncx" name="enable_ncx" checked>
+                                <span class="checkmark"></span>
+                                Include NCX Navigation
+                            </label>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <div class="form-actions">
+                            <button type="submit" class="generate-button">
+                                <i class="fas fa-magic"></i>
+                                Generate eBook
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-section" class="results-section" style="display: none;">
+                    <h2>eBook Generated Successfully!</h2>
+                    
+                    <div class="success-card">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="success-content">
+                            <h3 id="success-title">eBook Ready for Download</h3>
+                            <p id="success-message">Your eBook has been generated successfully.</p>
+                            <div class="file-info">
+                                <div class="file-detail">
+                                    <strong>Filename:</strong> <span id="filename">-</span>
+                                </div>
+                                <div class="file-detail">
+                                    <strong>Format:</strong> <span id="file-format">-</span>
+                                </div>
+                                <div class="file-detail">
+                                    <strong>Size:</strong> <span id="file-size">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="download-actions">
+                        <button id="download-btn" class="download-button">
+                            <i class="fas fa-download"></i>
+                            Download eBook
+                        </button>
+                        <button id="generate-new-btn" class="secondary-button">
+                            <i class="fas fa-plus"></i>
+                            Generate New eBook
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <p>Generating your eBook...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error" class="error" style="display: none;">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <p id="error-message">An error occurred while generating the eBook.</p>
+                    <button onclick="hideError()" class="retry-button">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 XavierOS - Project X eBook Generator</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/projectx.js"></script>
+</body>
+</html>

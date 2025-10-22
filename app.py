@@ -9,6 +9,8 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import base64
 
@@ -42,6 +44,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # ===========================
 # Health Check Endpoints
@@ -49,7 +54,22 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    """Root endpoint - API information"""
+    """Root endpoint - serve the main portal"""
+    return FileResponse("static/index.html")
+
+@app.get("/lucy")
+def lucy_interface():
+    """Lucy WCAG checker interface"""
+    return FileResponse("static/lucy.html")
+
+@app.get("/projectx")
+def projectx_interface():
+    """Project X eBook generator interface"""
+    return FileResponse("static/projectx.html")
+
+@app.get("/api")
+def api_info():
+    """API information endpoint"""
     return {
         "name": "XavierOS",
         "description": "WCAG Machine and eBook Generator for personal use",

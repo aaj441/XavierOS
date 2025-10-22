@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucy - WCAG Compliance Checker | XavierOS</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/lucy.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-universal-access"></i>
+                <h1>Lucy</h1>
+            </div>
+            <p class="tagline">WCAG 2.1 AA Compliance Checker</p>
+            <nav class="nav">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a>
+                <a href="/projectx" class="nav-link">
+                    <i class="fas fa-book"></i>
+                    Project X
+                </a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="lucy-container">
+                <!-- Input Section -->
+                <div class="input-section">
+                    <h2>Check Your HTML for WCAG Compliance</h2>
+                    <p>Paste your HTML content below and Lucy will analyze it for accessibility issues.</p>
+                    
+                    <form id="wcag-form" class="wcag-form">
+                        <div class="form-group">
+                            <label for="html-content">HTML Content</label>
+                            <textarea 
+                                id="html-content" 
+                                name="html_content" 
+                                placeholder="Paste your HTML content here..."
+                                rows="10"
+                                required
+                            ></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="url">URL (Optional)</label>
+                            <input 
+                                type="url" 
+                                id="url" 
+                                name="url" 
+                                placeholder="https://example.com"
+                            >
+                        </div>
+                        
+                        <button type="submit" class="check-button">
+                            <i class="fas fa-search"></i>
+                            Check WCAG Compliance
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-section" class="results-section" style="display: none;">
+                    <h2>WCAG Compliance Report</h2>
+                    
+                    <!-- Summary Cards -->
+                    <div class="summary-cards">
+                        <div class="summary-card score-card">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-value" id="compliance-score">-</div>
+                                <div class="card-label">Compliance Score</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card critical-card">
+                            <div class="card-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-value" id="critical-count">-</div>
+                                <div class="card-label">Critical (Level A)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card warning-card">
+                            <div class="card-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-value" id="warning-count">-</div>
+                                <div class="card-label">Warnings (Level AA)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-card info-card">
+                            <div class="card-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-value" id="info-count">-</div>
+                                <div class="card-label">Info (Level AAA)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Issues List -->
+                    <div class="issues-section">
+                        <h3>Issues Found</h3>
+                        <div id="issues-list" class="issues-list">
+                            <!-- Issues will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <p>Analyzing your HTML for WCAG compliance...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error" class="error" style="display: none;">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <p id="error-message">An error occurred while checking WCAG compliance.</p>
+                    <button onclick="hideError()" class="retry-button">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 XavierOS - Lucy WCAG Compliance Checker</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/lucy.js"></script>
+</body>
+</html>

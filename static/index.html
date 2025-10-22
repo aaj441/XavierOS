@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XavierOS - WCAG Machine & eBook Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <h1>XavierOS</h1>
+            </div>
+            <p class="tagline">WCAG Machine & eBook Generator for Personal Use</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="welcome-section">
+                <h2>Choose Your Tool</h2>
+                <p>Select the tool you'd like to use from the options below:</p>
+            </div>
+
+            <!-- Tools Grid -->
+            <div class="tools-grid">
+                <!-- Lucy - WCAG Machine -->
+                <div class="tool-card" onclick="navigateToTool('lucy')">
+                    <div class="tool-icon lucy-icon">
+                        <i class="fas fa-universal-access"></i>
+                    </div>
+                    <div class="tool-content">
+                        <h3>Lucy</h3>
+                        <p class="tool-subtitle">WCAG Compliance Checker</p>
+                        <p class="tool-description">
+                            Check your HTML content for WCAG 2.1 AA compliance. 
+                            Get detailed reports with fix suggestions and compliance scoring.
+                        </p>
+                        <div class="tool-features">
+                            <span class="feature-tag">Level A, AA, AAA</span>
+                            <span class="feature-tag">Compliance Scoring</span>
+                            <span class="feature-tag">Fix Suggestions</span>
+                        </div>
+                    </div>
+                    <div class="tool-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Project X - eBook Generator -->
+                <div class="tool-card" onclick="navigateToTool('projectx')">
+                    <div class="tool-icon projectx-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="tool-content">
+                        <h3>Project X</h3>
+                        <p class="tool-subtitle">eBook Generator</p>
+                        <p class="tool-description">
+                            Generate professional eBooks in EPUB format. 
+                            Create Kindle-friendly books with chapters, TOC, and metadata.
+                        </p>
+                        <div class="tool-features">
+                            <span class="feature-tag">EPUB Format</span>
+                            <span class="feature-tag">Kindle Optimized</span>
+                            <span class="feature-tag">Table of Contents</span>
+                        </div>
+                    </div>
+                    <div class="tool-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Info Section -->
+            <div class="api-info">
+                <h3>API Information</h3>
+                <p>This portal provides easy access to the XavierOS API tools. You can also use the API directly:</p>
+                <div class="api-links">
+                    <a href="/docs" target="_blank" class="api-link">
+                        <i class="fas fa-code"></i>
+                        API Documentation
+                    </a>
+                    <a href="/health" target="_blank" class="api-link">
+                        <i class="fas fa-heartbeat"></i>
+                        Health Check
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 XavierOS - Personal WCAG Machine & eBook Generator</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
