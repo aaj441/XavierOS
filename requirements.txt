@@ -2,18 +2,18 @@
 # Dependencies for Lucy and Project X
 
 # FastAPI and server
-fastapi==0.115.6
-uvicorn[standard]==0.22.0
-python-dotenv==1.0.1
-pydantic==2.10.5
+fastapi>=0.115.0,<0.120.0
+uvicorn[standard]>=0.22.0,<0.40.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
 
 # Lucy - WCAG Compliance Checker
-beautifulsoup4==4.12.3
-lxml==5.1.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0  # Required by ebooklib
 
 # Project X - eBook Formatter
 ebooklib==0.18
-Pillow==10.2.0
+Pillow>=10.0.0
 
 # Utilities
-python-multipart==0.0.9
+python-multipart>=0.0.9

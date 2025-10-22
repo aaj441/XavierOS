@@ -77,6 +77,7 @@ class ProjectX:
         Returns:
             EPUB file as bytes
         """
+        self.logger.info(f"Starting EPUB generation for '{metadata.title}' with {len(chapters)} chapters")
         book = epub.EpubBook()
 
         # Set metadata
@@ -120,7 +121,7 @@ class ProjectX:
 
         # Create EPUB chapters
         epub_chapters = []
-        spine = ['nav']
+        spine = []
 
         for idx, chapter in enumerate(sorted_chapters, 1):
             # Clean and format HTML content
@@ -150,23 +151,30 @@ class ProjectX:
         book.add_item(nav_css)
 
         # Add navigation files
-        if enable_toc:
-            book.toc = tuple(epub_chapters)
+        book.toc = tuple(epub_chapters) if epub_chapters else ()
 
+        # Add NCX and Nav
         if enable_ncx:
             book.add_item(epub.EpubNcx())
-
-        book.add_item(epub.EpubNav())
-
-        # Set spine
-        book.spine = spine
+        
+        if enable_toc:
+            nav = epub.EpubNav()
+            book.add_item(nav)
+            # Set spine with nav first if we have it
+            book.spine = [nav] + spine
+        else:
+            # No nav, just chapters
+            book.spine = spine
 
         # Generate EPUB file
         epub_data = io.BytesIO()
-        epub.write_epub(epub_data, book)
-        epub_data.seek(0)
-
-        return epub_data.read()
+        try:
+            epub.write_epub(epub_data, book, {})
+            epub_data.seek(0)
+            return epub_data.read()
+        except Exception as e:
+            self.logger.error(f"Error writing EPUB: {e}")
+            raise
 
     def _format_chapter_html(self, content: str, title: str) -> str:
         """
@@ -179,8 +187,9 @@ class ProjectX:
         Returns:
             Formatted HTML
         """
-        # Parse HTML
-        soup = BeautifulSoup(content, 'html.parser')
+        # Ensure content is not empty
+        if not content or not content.strip():
+            content = "<p>No content available.</p>"
 
         # Create proper HTML structure
         html_template = f"""<?xml version='1.0' encoding='utf-8'?>
@@ -193,7 +202,7 @@ class ProjectX:
 <body>
     <h1>{title}</h1>
     <div class="chapter-content">
-        {soup.prettify()}
+        {content}
     </div>
 </body>
 </html>"""
@@ -369,6 +378,8 @@ class ProjectX:
 
             # Encode file data as base64
             file_data_b64 = base64.b64encode(file_data).decode('utf-8')
+            
+            self.logger.info(f"Successfully generated {format} eBook: {filename} ({len(file_data)} bytes)")
 
             return eBookResponse(
                 success=True,
@@ -380,7 +391,9 @@ class ProjectX:
             )
 
         except Exception as e:
-            self.logger.error(f"Error generating eBook: {e}", exc_info=True)
+            import traceback
+            self.logger.error(f"Error generating eBook: {e}")
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             return eBookResponse(
                 success=False,
                 message=f"Error generating eBook: {str(e)}",

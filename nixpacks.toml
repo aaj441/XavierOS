@@ -1,0 +1,17 @@
+# nixpacks.toml
+# Configuration for Railway deployment using Nixpacks
+
+[phases.setup]
+# Install system dependencies needed for lxml
+nixPkgs = ["python311", "libxml2", "libxslt", "gcc", "python311Packages.pip"]
+
+[phases.install]
+# Ensure pip is up to date and install dependencies
+cmds = [
+    "python -m pip install --upgrade pip setuptools wheel",
+    "python -m pip install -r requirements.txt"
+]
+
+[start]
+# Start command for the application
+cmd = "python -m uvicorn app:app --host 0.0.0.0 --port $PORT"
