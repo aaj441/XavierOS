@@ -1,10 +1,11 @@
 # XavierOS
 
-**WCAG Machine & eBook Generator for Personal Use**
+**WCAG Machine, eBook Generator & CGP Archetype Engine for Personal Use**
 
-XavierOS combines two powerful tools into one unified API:
+XavierOS combines three powerful tools into one unified API:
 - **Lucy**: WCAG 2.1 AA Compliance Checker
 - **Project X**: Kindle-friendly eBook Generator
+- **CGP Archetype Engine**: Personalized care archetypes and ritual system
 
 ---
 
@@ -38,6 +39,22 @@ XavierOS combines two powerful tools into one unified API:
   - Rich metadata (title, author, ISBN, etc.)
   - Custom CSS styling optimized for e-readers
 - Base64 file output for easy integration
+
+### CGP Archetype Engine
+- 7 distinct care archetypes for personalized wellness
+- Personalized archetype recommendations based on your state and concerns
+- Daily ritual practices for each archetype
+- PDF guides available for download
+- Archetypes include:
+  - **Griefwalker**: For rest, gentleness, and soothing support
+  - **Fighter**: For justice, resilience, and advocacy
+  - **Self-Protector**: For privacy, calm, and boundaries
+  - **Seeker**: For freedom, wonder, and exploration
+  - **Solo Architect**: For clarity, independence, and minimalism
+  - **Connector**: For belonging, support, and community
+  - **Nurturer**: For wholeness, inner peace, and integrative care
+- Integration with Lucy and Project X for archetype-specific content
+- Foundation for future Ritual-Union sound therapy integration
 
 ---
 
@@ -128,6 +145,24 @@ The 404 error you experienced should be resolved with the proper configuration f
 - `POST /project-x/download` - Generate and download eBook directly
 - `GET /project-x/info` - Get information about Project X's capabilities
 
+### CGP Archetype Engine
+
+- `GET /cgp/archetypes` - Get all 7 available archetypes
+- `GET /cgp/archetype/{name}` - Get specific archetype details
+  - Available names: Griefwalker, Fighter, Self-Protector, Seeker, Solo Architect, Connector, Nurturer
+- `POST /cgp/recommend` - Get personalized archetype recommendations
+  ```json
+  {
+    "current_state": "overwhelmed and tired",
+    "concerns": ["burnout", "rest", "gentle support"],
+    "preferences": {}
+  }
+  ```
+- `GET /cgp/pdf/{name}` - Download archetype PDF guide
+- `GET /cgp/ritual/{name}` - Get just the ritual text for an archetype
+- `GET /cgp/report/{name}` - Get comprehensive archetype report with integration suggestions
+- `GET /cgp/info` - Get information about CGP Engine's capabilities
+
 ### Combined Workflow
 
 - `POST /workflow/check-and-generate` - Check WCAG compliance AND generate eBook in one request
@@ -199,6 +234,39 @@ if result['success']:
     print(f"eBook saved: {result['filename']}")
 ```
 
+### Get Archetype Recommendations (CGP)
+
+```python
+import requests
+
+response = requests.post('http://localhost:8000/cgp/recommend', json={
+    "current_state": "feeling overwhelmed and burned out",
+    "concerns": ["rest", "gentle support", "avoiding burnout"],
+    "preferences": {}
+})
+
+recommendations = response.json()
+for rec in recommendations:
+    print(f"{rec['archetype_name']} (confidence: {rec['confidence']})")
+    print(f"  Reason: {rec['reasoning']}\n")
+
+# Get details for top recommendation
+top_archetype = recommendations[0]['archetype_name']
+archetype_response = requests.get(f'http://localhost:8000/cgp/archetype/{top_archetype}')
+archetype = archetype_response.json()
+
+print(f"Your archetype: {archetype['name']}")
+print(f"Ritual: {archetype['data']['ritual']}")
+print(f"Values: {', '.join(archetype['data']['values'])}")
+
+# Download PDF guide
+pdf_response = requests.get(f'http://localhost:8000/cgp/pdf/{top_archetype}')
+if pdf_response.status_code == 200:
+    with open(f'{top_archetype}.pdf', 'wb') as f:
+        f.write(pdf_response.content)
+    print(f"PDF guide saved: {top_archetype}.pdf")
+```
+
 ### Using cURL
 
 ```bash
@@ -212,6 +280,20 @@ curl http://localhost:8000/lucy/info
 
 # Get Project X info
 curl http://localhost:8000/project-x/info
+
+# Get all archetypes
+curl http://localhost:8000/cgp/archetypes
+
+# Get specific archetype
+curl http://localhost:8000/cgp/archetype/Griefwalker
+
+# Get archetype recommendations
+curl -X POST http://localhost:8000/cgp/recommend \
+  -H "Content-Type: application/json" \
+  -d '{"current_state": "overwhelmed", "concerns": ["burnout", "rest"]}'
+
+# Get CGP info
+curl http://localhost:8000/cgp/info
 ```
 
 ---
@@ -240,15 +322,19 @@ Both provide interactive API documentation where you can test endpoints directly
 
 ```
 XavierOS/
-├── app.py              # Main FastAPI application
-├── lucy.py             # WCAG compliance checker
-├── project_x.py        # eBook generator
-├── requirements.txt    # Python dependencies
-├── Procfile           # Railway/Heroku deployment
-├── railway.toml       # Railway configuration
-├── runtime.txt        # Python version
-├── README.md          # This file
-└── XOS (2)/           # Legacy A5-Browser-Use project (kept for reference)
+├── app.py                              # Main FastAPI application
+├── lucy.py                             # WCAG compliance checker
+├── project_x.py                        # eBook generator
+├── cgp_engine.py                       # CGP Archetype Engine
+├── archetype_prompt_vault_waltz4.json  # Archetype data
+├── ritual_union_schema.json            # Ritual-Union architecture spec
+├── *.pdf                               # Archetype PDF guides (7 files)
+├── requirements.txt                    # Python dependencies
+├── Procfile                           # Railway/Heroku deployment
+├── railway.toml                       # Railway configuration
+├── runtime.txt                        # Python version
+├── README.md                          # This file
+└── XOS (2)/                           # Legacy A5-Browser-Use project (kept for reference)
 ```
 
 ---

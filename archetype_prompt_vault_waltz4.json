@@ -1,0 +1,129 @@
+{
+  "Griefwalker": {
+    "narrative": "This plan is quiet, gentle, and won\u2019t overwhelm. It\u2019s built for rest, not stress.",
+    "tone": "Warm Grandparent",
+    "values": [
+      "gentleness",
+      "ease",
+      "soothing"
+    ],
+    "risks": [
+      "burnout",
+      "overwhelm"
+    ],
+    "features": [
+      "In-home care",
+      "Spiritual support"
+    ],
+    "ritual": "Close your eyes. Say the names you carry. Choose peace again.",
+    "audio": "Griefwalker.mp3"
+  },
+  "Fighter": {
+    "narrative": "You need a plan that fights back. Appeal rights. Quick access. Real doctors who listen.",
+    "tone": "OG Uncle",
+    "values": [
+      "justice",
+      "resilience"
+    ],
+    "risks": [
+      "neglect",
+      "delay fatigue"
+    ],
+    "features": [
+      "Appeals team",
+      "Escalation hotline"
+    ],
+    "ritual": "You\u2019ve survived before. Say your full name. Stand back up.",
+    "audio": "Fighter.mp3"
+  },
+  "Self-Protector": {
+    "narrative": "Boundaries matter. This plan respects your space\u2014low calls, no upsells.",
+    "tone": "Neutral AI",
+    "values": [
+      "privacy",
+      "calm"
+    ],
+    "risks": [
+      "intrusion",
+      "sales fatigue"
+    ],
+    "features": [
+      "Silence-first enrollment",
+      "Agent opt-out"
+    ],
+    "ritual": "Breathe in safety. Exhale obligation. This one is for you.",
+    "audio": "Self-Protector.mp3"
+  },
+  "Seeker": {
+    "narrative": "This plan is your launchpad. No referrals. Broad network. Follow your curiosity.",
+    "tone": "Dreamy Guide",
+    "values": [
+      "freedom",
+      "wonder"
+    ],
+    "risks": [
+      "paralysis",
+      "over-choice"
+    ],
+    "features": [
+      "Wellness rewards",
+      "Flexible network"
+    ],
+    "ritual": "Light a candle. Ask a question. Let this plan carry you forward.",
+    "audio": "Seeker.mp3"
+  },
+  "Solo Architect": {
+    "narrative": "Minimalist. Clear. Efficient. This plan is for those who think in grids and care in silence.",
+    "tone": "Data Whisperer",
+    "values": [
+      "clarity",
+      "independence"
+    ],
+    "risks": [
+      "rigidity",
+      "empathy void"
+    ],
+    "features": [
+      "Transparent pricing",
+      "Plan finder"
+    ],
+    "ritual": "Sort. Filter. Choose. This is yours to architect.",
+    "audio": "Solo Architect.mp3"
+  },
+  "Connector": {
+    "narrative": "You care for others. This plan supports caregivers and connects you to the community.",
+    "tone": "Community Voice",
+    "values": [
+      "belonging",
+      "support"
+    ],
+    "risks": [
+      "isolation",
+      "emotional labor"
+    ],
+    "features": [
+      "Home visits",
+      "Shared access"
+    ],
+    "ritual": "Think of someone you love. This plan protects them too.",
+    "audio": "Connector.mp3"
+  },
+  "Nurturer": {
+    "narrative": "You\u2019re in healing mode. This plan integrates physical, mental, and spiritual care.",
+    "tone": "Healer",
+    "values": [
+      "wholeness",
+      "inner peace"
+    ],
+    "risks": [
+      "judgment",
+      "cost fatigue"
+    ],
+    "features": [
+      "Integrative care",
+      "Holistic plans"
+    ],
+    "ritual": "Place your hand on your chest. Say: I am worthy of care.",
+    "audio": "Nurturer.mp3"
+  }
+}

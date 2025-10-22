@@ -12,7 +12,7 @@ from fastapi.responses import Response, JSONResponse
 from pydantic import BaseModel
 import base64
 
-# Import Lucy and Project X
+# Import Lucy, Project X, and CGP Engine
 from lucy import check_wcag_compliance, WCAGReport
 from project_x import (
     create_ebook,
@@ -21,6 +21,13 @@ from project_x import (
     eBookRequest,
     eBookResponse
 )
+from cgp_engine import (
+    CGPArchetypeEngine,
+    ArchetypeProfile,
+    ArchetypeRecommendation,
+    UserArchetypeProfile
+)
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +35,13 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="XavierOS - WCAG Machine & eBook Generator",
-    description="Personal WCAG compliance checker and Kindle-friendly eBook generator",
-    version="1.0.0"
+    title="XavierOS - WCAG Machine, eBook Generator & CGP Archetype Engine",
+    description="Personal WCAG compliance checker, Kindle-friendly eBook generator, and care archetype system",
+    version="2.0.0"
 )
+
+# Initialize CGP Archetype Engine
+cgp_engine = CGPArchetypeEngine()
 
 # Configure CORS
 app.add_middleware(
@@ -52,8 +62,8 @@ def read_root():
     """Root endpoint - API information"""
     return {
         "name": "XavierOS",
-        "description": "WCAG Machine and eBook Generator for personal use",
-        "version": "1.0.0",
+        "description": "WCAG Machine, eBook Generator, and CGP Archetype Engine for personal use",
+        "version": "2.0.0",
         "endpoints": {
             "health": "/health",
             "lucy": {
@@ -63,6 +73,13 @@ def read_root():
             "project_x": {
                 "generate_ebook": "/project-x/generate",
                 "description": "Kindle-friendly eBook generator"
+            },
+            "cgp": {
+                "list_archetypes": "/cgp/archetypes",
+                "get_archetype": "/cgp/archetype/{name}",
+                "recommend": "/cgp/recommend",
+                "download_pdf": "/cgp/pdf/{name}",
+                "description": "CGP Archetype Engine for personalized care rituals"
             }
         }
     }
@@ -75,7 +92,9 @@ def health_check():
         "status": "healthy",
         "service": "XavierOS",
         "lucy": "operational",
-        "project_x": "operational"
+        "project_x": "operational",
+        "cgp_engine": "operational",
+        "archetypes_loaded": len(cgp_engine.archetypes)
     }
 
 
@@ -277,6 +296,235 @@ def project_x_info():
             "filename": "Generated filename",
             "format": "Output format",
             "size_bytes": "File size in bytes"
+        }
+    }
+
+
+# ===========================
+# CGP Archetype Engine
+# ===========================
+
+from typing import List, Dict
+
+class ArchetypeRecommendRequest(BaseModel):
+    """Request for archetype recommendation"""
+    current_state: str
+    concerns: List[str]
+    preferences: Dict[str, any] = {}
+
+
+@app.get("/cgp/archetypes", response_model=List[ArchetypeProfile])
+async def list_archetypes():
+    """
+    Get all available CGP care archetypes
+
+    **CGP Archetype Engine** provides personalized care archetypes
+    for wellness and ritual experiences.
+
+    Returns a list of all 7 archetypes:
+    - Griefwalker
+    - Fighter
+    - Self-Protector
+    - Seeker
+    - Solo Architect
+    - Connector
+    - Nurturer
+    """
+    try:
+        archetypes = cgp_engine.get_all_archetypes()
+        logger.info(f"Retrieved {len(archetypes)} archetypes")
+        return archetypes
+    except Exception as e:
+        logger.error(f"Error retrieving archetypes: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve archetypes: {str(e)}")
+
+
+@app.get("/cgp/archetype/{name}", response_model=ArchetypeProfile)
+async def get_archetype(name: str):
+    """
+    Get specific archetype by name
+
+    Available archetypes:
+    - Griefwalker
+    - Fighter
+    - Self-Protector
+    - Seeker
+    - Solo Architect
+    - Connector
+    - Nurturer
+
+    Returns complete archetype profile including:
+    - Narrative
+    - Tone
+    - Values
+    - Risks
+    - Features
+    - Ritual text
+    - PDF availability
+    """
+    try:
+        archetype = cgp_engine.get_archetype(name)
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
+
+        logger.info(f"Retrieved archetype: {name}")
+        return archetype
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving archetype {name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve archetype: {str(e)}")
+
+
+@app.post("/cgp/recommend", response_model=List[ArchetypeRecommendation])
+async def recommend_archetype(request: ArchetypeRecommendRequest = Body(...)):
+    """
+    Get archetype recommendations based on current state and concerns
+
+    Analyzes your current state, concerns, and preferences to recommend
+    the most suitable care archetype(s).
+
+    **Request body:**
+    - **current_state**: Your current emotional/care state (e.g., "overwhelmed", "exploring", "grieving")
+    - **concerns**: List of specific concerns (e.g., ["privacy", "burnout", "community support"])
+    - **preferences**: Optional preferences dict
+
+    **Returns:**
+    List of recommended archetypes with confidence scores and reasoning
+    """
+    try:
+        recommendations = cgp_engine.recommend_archetype(
+            current_state=request.current_state,
+            concerns=request.concerns,
+            preferences=request.preferences
+        )
+
+        logger.info(f"Generated {len(recommendations)} recommendations for state: {request.current_state}")
+        return recommendations
+    except Exception as e:
+        logger.error(f"Error generating recommendations: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
+
+
+@app.get("/cgp/pdf/{name}")
+async def download_archetype_pdf(name: str):
+    """
+    Download archetype PDF guide
+
+    Returns the PDF file for the specified archetype if available.
+    """
+    try:
+        # Check if archetype exists
+        archetype = cgp_engine.get_archetype(name)
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
+
+        if not archetype.pdf_available:
+            raise HTTPException(status_code=404, detail=f"PDF not available for archetype '{name}'")
+
+        # Read PDF file
+        pdf_path = Path(f"{name}.pdf")
+        if not pdf_path.exists():
+            raise HTTPException(status_code=404, detail=f"PDF file not found for '{name}'")
+
+        with open(pdf_path, "rb") as f:
+            pdf_data = f.read()
+
+        logger.info(f"Serving PDF for archetype: {name}")
+
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={name}.pdf",
+                "Content-Length": str(len(pdf_data))
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving PDF for {name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to serve PDF: {str(e)}")
+
+
+@app.get("/cgp/ritual/{name}")
+async def get_archetype_ritual(name: str):
+    """
+    Get the ritual text for a specific archetype
+
+    Returns just the ritual practice text for quick access.
+    """
+    try:
+        ritual = cgp_engine.get_ritual_for_archetype(name)
+        if not ritual:
+            raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
+
+        return {
+            "archetype": name,
+            "ritual": ritual
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving ritual for {name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve ritual: {str(e)}")
+
+
+@app.get("/cgp/report/{name}")
+async def get_archetype_report(name: str):
+    """
+    Get comprehensive archetype report
+
+    Returns detailed report including:
+    - Complete profile
+    - Ritual guidance
+    - Integration suggestions (Lucy, Project X)
+    - Related archetypes
+    """
+    try:
+        report = cgp_engine.generate_archetype_report(name)
+        if not report:
+            raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
+
+        logger.info(f"Generated comprehensive report for archetype: {name}")
+        return report
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating report for {name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
+
+
+@app.get("/cgp/info")
+def cgp_info():
+    """Get information about CGP Archetype Engine"""
+    return {
+        "name": "CGP Archetype Engine",
+        "description": "Care archetypes for personalized wellness and ritual experiences",
+        "version": "1.0 (Waltz 4 Expansion)",
+        "archetypes": cgp_engine.get_archetype_names(),
+        "capabilities": [
+            "7 distinct care archetypes",
+            "Personalized recommendations",
+            "Daily ritual practices",
+            "PDF guides for each archetype",
+            "Integration with Lucy (WCAG) and Project X (eBook)",
+            "Custom ritual creation",
+            "Related archetype discovery"
+        ],
+        "archetype_components": {
+            "narrative": "Core story and approach",
+            "tone": "Communication style",
+            "values": "Key principles",
+            "risks": "What this archetype protects against",
+            "features": "Specific support features",
+            "ritual": "Daily practice text"
+        },
+        "integration": {
+            "lucy": "Ensure archetype content is accessible",
+            "project_x": "Generate personalized archetype eBooks",
+            "future": "Ritual-Union sound therapy integration"
         }
     }
 

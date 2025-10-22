@@ -1,0 +1,647 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ritual-Union Developer Schema",
+  "version": "1.0.0",
+  "description": "Machine-readable specification for Ritual-Union app architecture, components, and data models",
+
+  "systemArchitecture": {
+    "framework": "modular_monolith",
+    "agents": {
+      "Helios": {
+        "domain": "Vision & Narrative",
+        "role": "Oversees thematic arcs and seasonal campaigns",
+        "dependencies": [],
+        "outputs": ["theme_updates", "narrative_events"]
+      },
+      "Athena": {
+        "domain": "Strategic Reasoning",
+        "role": "Product logic, error prevention, decision support",
+        "dependencies": ["Hermes"],
+        "outputs": ["strategic_recommendations", "error_warnings"]
+      },
+      "Hermes": {
+        "domain": "Communication Bridge",
+        "role": "Event bus, message routing between agents",
+        "dependencies": [],
+        "outputs": ["routed_messages", "event_logs"],
+        "api": {
+          "publish": "PantheonMessage → void",
+          "subscribe": "(eventType: string, callback: Function) → void",
+          "unsubscribe": "(eventType: string, callback: Function) → void"
+        }
+      },
+      "Hephaestus": {
+        "domain": "Engineering",
+        "role": "Code generation, build automation",
+        "dependencies": ["Athena"],
+        "outputs": ["compiled_artifacts", "deployment_configs"]
+      },
+      "Apollo": {
+        "domain": "Music & Resonance",
+        "role": "Adaptive soundscape generation and modulation",
+        "dependencies": ["Demeter", "Artemis", "Hermes"],
+        "inputs": ["biometric_state", "mood_selection", "time_of_day", "ritual_phase"],
+        "outputs": ["audio_stream", "soundscape_metadata"],
+        "algorithms": {
+          "heartRateToTempo": {
+            "formula": "baselineBPM + (currentHR - restingHR) * 0.8",
+            "constraints": { "min": 40, "max": 120 }
+          },
+          "circadianBrightness": {
+            "morning": { "time": "06:00-10:00", "modifier": 1.2 },
+            "midday": { "time": "10:00-15:00", "modifier": 1.0 },
+            "evening": { "time": "18:00-22:00", "modifier": 0.7 },
+            "night": { "time": "22:00-06:00", "modifier": 0.5 }
+          }
+        }
+      },
+      "Artemis": {
+        "domain": "Focus & Ritual Design",
+        "role": "Micro-ritual scheduling and execution",
+        "dependencies": ["Demeter", "Apollo", "Hermes"],
+        "inputs": ["ritual_selection", "energy_state", "calendar_context"],
+        "outputs": ["ritual_commands", "haptic_patterns", "timer_updates"],
+        "ritualTypes": [
+          "breath",
+          "reflection",
+          "movement",
+          "intention",
+          "release"
+        ]
+      },
+      "Dionysus": {
+        "domain": "Creativity & Emotion",
+        "role": "Mood modulation, catharsis loops, emotional expression",
+        "dependencies": ["Apollo", "Demeter"],
+        "outputs": ["mood_suggestions", "emotional_insights"]
+      },
+      "Demeter": {
+        "domain": "Health & Rhythm",
+        "role": "Biometric analysis, energy state classification",
+        "dependencies": ["Poseidon", "Hermes"],
+        "inputs": ["healthkit_stream", "time_of_day", "user_history"],
+        "outputs": ["energy_state", "circadian_phase", "stress_indicators", "baselines"],
+        "energyStates": [
+          "depleted",
+          "calm",
+          "focused",
+          "energized",
+          "overstimulated"
+        ]
+      },
+      "Hestia": {
+        "domain": "Calm UX & Space",
+        "role": "UI component library, interface warmth, ADHD-friendly design",
+        "dependencies": ["Hermes"],
+        "outputs": ["ui_components", "theme_config", "accessibility_settings"]
+      },
+      "Ares": {
+        "domain": "Execution Energy",
+        "role": "Action prompts, momentum tracking, assertive engagement",
+        "dependencies": ["Artemis"],
+        "outputs": ["action_nudges", "progress_metrics"]
+      },
+      "Poseidon": {
+        "domain": "Data Flow",
+        "role": "API orchestration, external service integration",
+        "dependencies": ["Hermes"],
+        "inputs": ["api_credentials", "sync_config"],
+        "outputs": ["music_history", "mood_inferences", "sync_status"],
+        "integrations": ["LastFM", "Spotify", "AppleMusic", "HealthKit", "GoogleFit"]
+      },
+      "Hades": {
+        "domain": "Shadow & Cleanup",
+        "role": "Psychological integration, archival logic, data pruning",
+        "dependencies": ["Demeter"],
+        "outputs": ["archived_sessions", "shadow_insights", "cleanup_reports"]
+      }
+    }
+  },
+
+  "dataModels": {
+    "UserProfile": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "archetype": {
+          "type": "string",
+          "enum": ["Connector", "Fighter", "Griefwalker", "Nurturer", "Seeker", "Self-Protector", "Solo Architect"]
+        },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "defaultSoundscape": { "type": "string" },
+            "hapticEnabled": { "type": "boolean", "default": true },
+            "voicePromptsEnabled": { "type": "boolean", "default": false },
+            "theme": { "type": "string", "enum": ["light", "dark", "auto"], "default": "auto" },
+            "fontChoice": { "type": "string", "enum": ["system", "opendyslexic"], "default": "system" }
+          }
+        },
+        "biometricBaselines": {
+          "type": "object",
+          "properties": {
+            "restingHeartRate": { "type": "number", "minimum": 40, "maximum": 100 },
+            "averageHRV": { "type": "number" },
+            "sleepSchedule": {
+              "type": "object",
+              "properties": {
+                "bedtime": { "type": "string", "format": "time" },
+                "wakeTime": { "type": "string", "format": "time" }
+              }
+            }
+          }
+        },
+        "connectedServices": {
+          "type": "object",
+          "properties": {
+            "healthKit": {
+              "type": "object",
+              "properties": {
+                "authorized": { "type": "boolean" },
+                "dataTypes": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "lastFm": {
+              "type": "object",
+              "properties": {
+                "username": { "type": "string" },
+                "connected": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "required": ["id", "preferences"]
+    },
+
+    "Ritual": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "duration": { "type": "number", "description": "Duration in seconds" },
+        "archetype": { "type": "string", "description": "Optional archetype association" },
+        "phases": {
+          "type": "array",
+          "items": { "$ref": "#/dataModels/RitualPhase" }
+        },
+        "adaptiveParams": {
+          "type": "object",
+          "properties": {
+            "extendIfCalm": { "type": "boolean" },
+            "skipIfAgitated": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["id", "name", "duration", "phases"]
+    },
+
+    "RitualPhase": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["breath", "reflection", "movement", "intention", "release"]
+        },
+        "duration": { "type": "number", "description": "Duration in seconds" },
+        "audioRequest": {
+          "type": "object",
+          "properties": {
+            "soundscape": { "type": "string" },
+            "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "required": ["soundscape", "intensity"]
+        },
+        "hapticPattern": { "$ref": "#/dataModels/HapticRhythm" },
+        "prompt": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "voiceEnabled": { "type": "boolean", "default": false }
+          }
+        }
+      },
+      "required": ["type", "duration", "audioRequest"]
+    },
+
+    "HapticRhythm": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "enum": ["steady", "breathing", "pulse", "wave"]
+        },
+        "bpm": { "type": "number", "description": "Beats per minute for rhythmic patterns" },
+        "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["pattern", "intensity"]
+    },
+
+    "BiometricSnapshot": {
+      "type": "object",
+      "properties": {
+        "heartRate": { "type": "number", "minimum": 30, "maximum": 220 },
+        "heartRateVariability": { "type": "number", "description": "SDNN in milliseconds" },
+        "respiratoryRate": { "type": "number", "minimum": 8, "maximum": 30 },
+        "movement": {
+          "type": "string",
+          "enum": ["sedentary", "light", "moderate", "vigorous"]
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["heartRate", "timestamp"]
+    },
+
+    "RitualSession": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "ritualId": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "completed": { "type": "boolean" },
+        "initialEnergyState": {
+          "type": "string",
+          "enum": ["depleted", "calm", "focused", "energized", "overstimulated"]
+        },
+        "finalEnergyState": {
+          "type": "string",
+          "enum": ["depleted", "calm", "focused", "energized", "overstimulated"]
+        },
+        "biometricSnapshots": {
+          "type": "array",
+          "items": { "$ref": "#/dataModels/BiometricSnapshot" }
+        },
+        "userFeedback": {
+          "type": "object",
+          "properties": {
+            "helpfulness": { "type": "integer", "minimum": 1, "maximum": 5 },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["too-fast", "too-slow", "just-right", "fell-asleep", "distracted", "calm", "energized"]
+              }
+            }
+          }
+        }
+      },
+      "required": ["id", "ritualId", "startTime", "completed", "initialEnergyState"]
+    },
+
+    "PantheonMessage": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "timestamp": { "type": "number", "description": "Unix timestamp in milliseconds" },
+        "source": { "type": "string", "description": "Agent name (e.g., 'Apollo')" },
+        "destination": { "type": "string", "description": "Agent name or 'broadcast'" },
+        "event": { "type": "string", "description": "Event type identifier" },
+        "payload": { "type": "object", "description": "Event-specific data" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "sessionId": { "type": "string" },
+            "userId": { "type": "string" },
+            "priority": { "type": "string", "enum": ["low", "normal", "high"], "default": "normal" }
+          }
+        }
+      },
+      "required": ["id", "timestamp", "source", "destination", "event", "payload"]
+    }
+  },
+
+  "uiComponents": {
+    "designSystem": {
+      "colors": {
+        "light": {
+          "primary": "#6366F1",
+          "secondary": "#F59E0B",
+          "background": "#FAFAF9",
+          "surface": "#FFFFFF",
+          "accent": "#FB7185",
+          "textPrimary": "#1F2937",
+          "textSecondary": "#6B7280",
+          "error": "#EF4444",
+          "success": "#10B981"
+        },
+        "dark": {
+          "primary": "#818CF8",
+          "secondary": "#FBBF24",
+          "background": "#1F2937",
+          "surface": "#374151",
+          "accent": "#FDA4AF",
+          "textPrimary": "#F9FAFB",
+          "textSecondary": "#D1D5DB",
+          "error": "#F87171",
+          "success": "#34D399"
+        }
+      },
+      "typography": {
+        "fontFamilies": {
+          "system": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          "opendyslexic": "'OpenDyslexic', sans-serif"
+        },
+        "sizes": {
+          "xs": "12px",
+          "sm": "14px",
+          "base": "16px",
+          "lg": "18px",
+          "xl": "20px",
+          "2xl": "24px",
+          "3xl": "30px",
+          "4xl": "36px"
+        },
+        "weights": {
+          "normal": 400,
+          "medium": 500,
+          "semibold": 600,
+          "bold": 700
+        }
+      },
+      "spacing": {
+        "baseUnit": "8px",
+        "scale": {
+          "xs": "4px",
+          "sm": "8px",
+          "md": "16px",
+          "lg": "24px",
+          "xl": "32px",
+          "2xl": "48px",
+          "3xl": "64px"
+        }
+      },
+      "motion": {
+        "duration": {
+          "fast": "150ms",
+          "normal": "250ms",
+          "slow": "350ms"
+        },
+        "easing": {
+          "default": "cubic-bezier(0.4, 0, 0.2, 1)",
+          "in": "cubic-bezier(0.4, 0, 1, 1)",
+          "out": "cubic-bezier(0, 0, 0.2, 1)"
+        },
+        "respectReducedMotion": true
+      },
+      "accessibility": {
+        "minimumTouchTarget": "44px",
+        "minimumContrast": "AAA",
+        "focusIndicatorWidth": "3px",
+        "screenReaderSupport": true
+      }
+    },
+
+    "components": [
+      {
+        "name": "RitualCard",
+        "description": "Swipeable card for ritual selection with audio preview",
+        "adhdFriendly": {
+          "features": ["One action per card", "Immediate audio feedback", "Large touch target"],
+          "avoids": ["Multiple CTAs", "Dense text", "Nested menus"]
+        },
+        "props": {
+          "ritual": { "type": "Ritual", "required": true },
+          "onSelect": { "type": "function", "required": true },
+          "onPreview": { "type": "function", "required": false }
+        },
+        "layout": {
+          "minHeight": "200px",
+          "padding": "24px",
+          "borderRadius": "16px",
+          "shadow": "soft"
+        }
+      },
+      {
+        "name": "SoundscapeSlider",
+        "description": "Visual waveform representing current audio state",
+        "adhdFriendly": {
+          "features": ["Visual feedback", "Smooth animations", "Clear current state"],
+          "avoids": ["Sudden changes", "Complex controls"]
+        },
+        "props": {
+          "intensity": { "type": "number", "range": [0, 1], "required": true },
+          "waveformData": { "type": "array", "required": false }
+        }
+      },
+      {
+        "name": "EnergyIndicator",
+        "description": "Circular gauge showing biometric-driven energy state",
+        "adhdFriendly": {
+          "features": ["At-a-glance status", "Color-coded states", "No numerical overload"],
+          "avoids": ["Complex charts", "Too many metrics"]
+        },
+        "props": {
+          "energyState": {
+            "type": "string",
+            "enum": ["depleted", "calm", "focused", "energized", "overstimulated"],
+            "required": true
+          },
+          "heartRate": { "type": "number", "required": false }
+        },
+        "colorMapping": {
+          "depleted": "#A78BFA",
+          "calm": "#6EE7B7",
+          "focused": "#60A5FA",
+          "energized": "#FBBF24",
+          "overstimulated": "#FB7185"
+        }
+      },
+      {
+        "name": "HapticButton",
+        "description": "Button with tactile feedback on interaction",
+        "adhdFriendly": {
+          "features": ["Immediate haptic response", "Clear visual state", "Large size"],
+          "avoids": ["Delayed feedback", "Ambiguous states"]
+        },
+        "props": {
+          "label": { "type": "string", "required": true },
+          "onPress": { "type": "function", "required": true },
+          "hapticPattern": { "type": "HapticRhythm", "required": false },
+          "variant": { "type": "string", "enum": ["primary", "secondary", "subtle"], "default": "primary" }
+        },
+        "minSize": "44x44px"
+      },
+      {
+        "name": "MinimalTimer",
+        "description": "Clean countdown timer with circular progress indicator",
+        "adhdFriendly": {
+          "features": ["Visual time representation", "Persistent display", "No clock-blocking"],
+          "avoids": ["Hidden progress", "Distracting animations"]
+        },
+        "props": {
+          "duration": { "type": "number", "description": "Seconds", "required": true },
+          "onComplete": { "type": "function", "required": true },
+          "showRemaining": { "type": "boolean", "default": true }
+        }
+      },
+      {
+        "name": "RitualPrompt",
+        "description": "Text or voice prompt during ritual phases",
+        "adhdFriendly": {
+          "features": ["Short sentences", "Optional voice", "Easy dismissal"],
+          "avoids": ["Long paragraphs", "Forced reading"]
+        },
+        "props": {
+          "text": { "type": "string", "required": true },
+          "voiceEnabled": { "type": "boolean", "default": false },
+          "duration": { "type": "number", "description": "Auto-dismiss after N seconds" }
+        }
+      }
+    ]
+  },
+
+  "sampleRituals": [
+    {
+      "id": "morning_ground",
+      "name": "Morning Ground",
+      "duration": 180,
+      "archetype": "Solo Architect",
+      "phases": [
+        {
+          "type": "breath",
+          "duration": 60,
+          "audioRequest": { "soundscape": "ambient_drone", "intensity": 0.3 },
+          "hapticPattern": { "pattern": "breathing", "intensity": 0.5 },
+          "prompt": { "text": "Notice your breath. No need to change it." }
+        },
+        {
+          "type": "reflection",
+          "duration": 60,
+          "audioRequest": { "soundscape": "soft_piano", "intensity": 0.4 },
+          "prompt": { "text": "What needs your attention today?" }
+        },
+        {
+          "type": "intention",
+          "duration": 60,
+          "audioRequest": { "soundscape": "rising_harmonics", "intensity": 0.6 },
+          "prompt": { "text": "Set one priority. Just one." }
+        }
+      ]
+    },
+    {
+      "id": "focus_reset",
+      "name": "Focus Reset",
+      "duration": 120,
+      "archetype": null,
+      "phases": [
+        {
+          "type": "movement",
+          "duration": 30,
+          "audioRequest": { "soundscape": "rhythmic_pulse", "intensity": 0.7 },
+          "hapticPattern": { "pattern": "pulse", "bpm": 120, "intensity": 0.6 },
+          "prompt": { "text": "Shake it out. Move your body." }
+        },
+        {
+          "type": "breath",
+          "duration": 60,
+          "audioRequest": { "soundscape": "ocean_waves", "intensity": 0.5 },
+          "hapticPattern": { "pattern": "breathing", "intensity": 0.4 }
+        },
+        {
+          "type": "intention",
+          "duration": 30,
+          "audioRequest": { "soundscape": "clear_bell", "intensity": 0.3 },
+          "prompt": { "text": "Back to focus." }
+        }
+      ]
+    },
+    {
+      "id": "evening_release",
+      "name": "Evening Release",
+      "duration": 300,
+      "archetype": "Griefwalker",
+      "phases": [
+        {
+          "type": "reflection",
+          "duration": 90,
+          "audioRequest": { "soundscape": "warm_strings", "intensity": 0.4 },
+          "prompt": { "text": "What are you carrying from today?" }
+        },
+        {
+          "type": "release",
+          "duration": 120,
+          "audioRequest": { "soundscape": "descending_harp", "intensity": 0.3 },
+          "hapticPattern": { "pattern": "wave", "intensity": 0.3 },
+          "prompt": { "text": "Let it go. It doesn't need to follow you." }
+        },
+        {
+          "type": "breath",
+          "duration": 90,
+          "audioRequest": { "soundscape": "night_ambient", "intensity": 0.2 },
+          "prompt": { "text": "Rest is coming." }
+        }
+      ]
+    }
+  ],
+
+  "apiEndpoints": {
+    "healthKit": {
+      "readHeartRate": {
+        "method": "GET",
+        "dataType": "HKQuantityTypeIdentifierHeartRate",
+        "permissions": ["read"],
+        "frequency": "realtime"
+      },
+      "readRespiratoryRate": {
+        "method": "GET",
+        "dataType": "HKQuantityTypeIdentifierRespiratoryRate",
+        "permissions": ["read"],
+        "frequency": "on_demand"
+      }
+    },
+    "lastFm": {
+      "recentTracks": {
+        "endpoint": "user.getRecentTracks",
+        "method": "GET",
+        "params": ["user", "limit", "from", "to"],
+        "rateLimits": { "requests": 5, "per": "second" }
+      },
+      "trackInfo": {
+        "endpoint": "track.getInfo",
+        "method": "GET",
+        "params": ["artist", "track"],
+        "returns": ["tags", "playcount", "listeners"]
+      }
+    },
+    "spotify": {
+      "audioFeatures": {
+        "endpoint": "/audio-features/{id}",
+        "method": "GET",
+        "returns": {
+          "valence": "number (0-1)",
+          "energy": "number (0-1)",
+          "tempo": "number (BPM)"
+        }
+      }
+    }
+  },
+
+  "performanceTargets": {
+    "appLaunchToFirstSound": { "target": "< 2 seconds", "metric": "Time to AudioContext.resume()" },
+    "biometricToSoundscapeUpdate": { "target": "< 50ms", "metric": "Event timestamp delta" },
+    "ritualPhaseTransition": { "target": "< 100ms", "metric": "Haptic + audio sync latency" },
+    "batteryDrain30Min": { "target": "< 5%", "metric": "iOS Battery API" },
+    "memoryFootprint": { "target": "< 100MB", "metric": "Xcode Instruments" },
+    "crashFreeRate": { "target": "> 99.5%", "metric": "Firebase Crashlytics" }
+  },
+
+  "privacyCompliance": {
+    "dataRetention": {
+      "healthMetrics": "30 days rolling",
+      "ritualSessions": "User-controlled (indefinite or manual delete)",
+      "preferences": "Indefinite"
+    },
+    "encryption": {
+      "atRest": "AES-256",
+      "inTransit": "TLS 1.3"
+    },
+    "regulations": ["GDPR", "CCPA", "HIPAA (if storing PHI)"],
+    "userRights": [
+      "Right to access (JSON export)",
+      "Right to erasure (in-app delete)",
+      "Right to data portability",
+      "Right to opt-out of analytics"
+    ]
+  }
+}
