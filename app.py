@@ -8,7 +8,8 @@ import logging
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import Response, JSONResponse, FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import base64
 
@@ -52,20 +53,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # ===========================
 # Health Check Endpoints
 # ===========================
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    """Root endpoint - API information"""
+    """Serve the frontend UI"""
+    try:
+        with open("static/index.html", "r") as f:
+            return f.read()
+    except Exception:
+        return """
+        <html>
+            <body>
+                <h1>XavierOS - v2.0.0</h1>
+                <p>WCAG Machine, eBook Generator, and CGP Archetype Engine</p>
+                <p><a href="/docs">API Documentation</a></p>
+            </body>
+        </html>
+        """
+
+
+@app.get("/api")
+def api_info():
+    """API information endpoint"""
     return {
         "name": "XavierOS",
         "description": "WCAG Machine, eBook Generator, and CGP Archetype Engine for personal use",
         "version": "2.0.0",
         "endpoints": {
             "health": "/health",
+            "frontend": "/",
             "lucy": {
                 "check_wcag": "/lucy/check",
                 "description": "WCAG compliance checker"

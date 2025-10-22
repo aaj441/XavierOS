@@ -82,9 +82,10 @@ XavierOS combines three powerful tools into one unified API:
    uvicorn app:app --host 0.0.0.0 --port 8000 --reload
    ```
 
-4. **Access the API**
-   - API Root: http://localhost:8000
+4. **Access XavierOS**
+   - **Frontend UI**: http://localhost:8000 (main interface with tabs for Lucy, Project X, and CGP)
    - API Docs: http://localhost:8000/docs
+   - API Info: http://localhost:8000/api
    - Health Check: http://localhost:8000/health
 
 ### Railway Deployment
@@ -97,6 +98,38 @@ The application is configured for Railway deployment with automatic detection.
 4. **Deploy!**
 
 The 404 error you experienced should be resolved with the proper configuration files now in place.
+
+---
+
+## Frontend UI
+
+XavierOS now includes a beautiful, modern web interface accessible at the root URL (`/`). The frontend provides:
+
+- **Tabbed Interface**: Easy navigation between Lucy, Project X, and CGP Engine
+- **Lucy Tab**:
+  - Paste HTML content for instant WCAG compliance checking
+  - Visual compliance score with color-coded severity levels
+  - Detailed issue reports with fix suggestions
+- **Project X Tab**:
+  - Intuitive form for book metadata
+  - Dynamic chapter management (add unlimited chapters)
+  - One-click eBook generation and download
+- **CGP Tab**:
+  - Get personalized archetype recommendations based on your current state
+  - Browse all 7 archetypes with beautiful cards
+  - View detailed archetype profiles in a modal
+  - Download PDF guides for each archetype
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Modern UI**: Gradient backgrounds, smooth animations, and glassmorphism effects
+
+### Screenshots
+
+The frontend features:
+- Clean, gradient purple header
+- Three main tabs for easy navigation
+- Card-based layouts for better organization
+- Real-time results with visual feedback
+- Download buttons for generated content
 
 ---
 

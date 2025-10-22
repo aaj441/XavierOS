@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XavierOS - WCAG Machine, eBook Generator & Archetype Engine</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🧬 XavierOS</h1>
+            <p class="subtitle">WCAG Machine, eBook Generator & Archetype Engine</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab-button active" onclick="switchTab('lucy')">
+                <span class="tab-icon">✓</span>
+                Lucy - WCAG Checker
+            </button>
+            <button class="tab-button" onclick="switchTab('projectx')">
+                <span class="tab-icon">📚</span>
+                Project X - eBook Generator
+            </button>
+            <button class="tab-button" onclick="switchTab('cgp')">
+                <span class="tab-icon">🧘</span>
+                CGP - Archetype Engine
+            </button>
+        </nav>
+
+        <!-- Lucy Tab -->
+        <div id="lucy-tab" class="tab-content active">
+            <div class="card">
+                <h2>Lucy - WCAG Compliance Checker</h2>
+                <p>Check your HTML content for WCAG 2.1 AA accessibility compliance</p>
+
+                <form id="lucy-form">
+                    <div class="form-group">
+                        <label for="html-content">HTML Content</label>
+                        <textarea id="html-content" rows="10" placeholder="Paste your HTML here..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="url-reference">URL Reference (optional)</label>
+                        <input type="url" id="url-reference" placeholder="https://example.com">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">🔍</span>
+                        Check Compliance
+                    </button>
+                </form>
+
+                <div id="lucy-results" class="results hidden">
+                    <h3>Compliance Report</h3>
+                    <div class="score-card">
+                        <div class="score-circle">
+                            <span id="compliance-score">0</span>
+                            <small>Score</small>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-item critical">
+                                <strong id="critical-count">0</strong> Critical (Level A)
+                            </div>
+                            <div class="score-item warning">
+                                <strong id="warning-count">0</strong> Warnings (Level AA)
+                            </div>
+                            <div class="score-item info">
+                                <strong id="info-count">0</strong> Info (Level AAA)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="issues-list" class="issues-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project X Tab -->
+        <div id="projectx-tab" class="tab-content">
+            <div class="card">
+                <h2>Project X - eBook Generator</h2>
+                <p>Generate Kindle-friendly eBooks in EPUB format</p>
+
+                <form id="projectx-form">
+                    <!-- Metadata Section -->
+                    <div class="section">
+                        <h3>Book Metadata</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="book-title">Title *</label>
+                                <input type="text" id="book-title" required placeholder="My Amazing Book">
+                            </div>
+                            <div class="form-group">
+                                <label for="book-author">Author</label>
+                                <input type="text" id="book-author" placeholder="Your Name">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="book-language">Language</label>
+                                <select id="book-language">
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="it">Italian</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="book-publisher">Publisher</label>
+                                <input type="text" id="book-publisher" placeholder="Publisher Name">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="book-description">Description</label>
+                            <textarea id="book-description" rows="3" placeholder="Brief description of your book..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Chapters Section -->
+                    <div class="section">
+                        <h3>Chapters</h3>
+                        <div id="chapters-container">
+                            <div class="chapter-item">
+                                <input type="text" class="chapter-title" placeholder="Chapter 1 Title" required>
+                                <textarea class="chapter-content" rows="5" placeholder="Chapter content (HTML supported)..." required></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="addChapter()">
+                            + Add Chapter
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">📖</span>
+                        Generate eBook
+                    </button>
+                </form>
+
+                <div id="projectx-results" class="results hidden">
+                    <h3>✅ eBook Generated Successfully!</h3>
+                    <div class="ebook-info">
+                        <p><strong>Filename:</strong> <span id="ebook-filename"></span></p>
+                        <p><strong>Format:</strong> <span id="ebook-format"></span></p>
+                        <p><strong>Size:</strong> <span id="ebook-size"></span></p>
+                    </div>
+                    <button id="download-ebook" class="btn btn-success">
+                        📥 Download eBook
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CGP Tab -->
+        <div id="cgp-tab" class="tab-content">
+            <div class="card">
+                <h2>CGP - Archetype Engine</h2>
+                <p>Discover your care archetype and get personalized ritual recommendations</p>
+
+                <!-- Archetype Selection Mode -->
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="showCGPSection('recommend')">
+                        Get Recommendation
+                    </button>
+                    <button class="btn btn-secondary" onclick="showCGPSection('browse')">
+                        Browse Archetypes
+                    </button>
+                </div>
+
+                <!-- Recommendation Section -->
+                <div id="cgp-recommend" class="cgp-section">
+                    <form id="cgp-form">
+                        <div class="form-group">
+                            <label for="current-state">Current State</label>
+                            <input type="text" id="current-state" placeholder="e.g., overwhelmed, exploring, grieving" required>
+                            <small>How are you feeling right now?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="concerns">Concerns</label>
+                            <textarea id="concerns" rows="3" placeholder="burnout, privacy, community support" required></textarea>
+                            <small>Enter your concerns separated by commas</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-icon">🔮</span>
+                            Find My Archetype
+                        </button>
+                    </form>
+
+                    <div id="cgp-recommendations" class="results hidden">
+                        <h3>Your Recommended Archetypes</h3>
+                        <div id="recommendations-list"></div>
+                    </div>
+                </div>
+
+                <!-- Browse Section -->
+                <div id="cgp-browse" class="cgp-section hidden">
+                    <div id="archetypes-grid" class="archetypes-grid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Archetype Detail Modal -->
+                <div id="archetype-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <button class="modal-close" onclick="closeArchetypeModal()">&times;</button>
+                        <div id="archetype-detail"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>XavierOS v2.0 - Built with Lucy, Project X & CGP Archetype Engine</p>
+            <p><a href="/docs" target="_blank">API Documentation</a> | <a href="/health">Health Check</a></p>
+        </footer>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
