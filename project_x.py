@@ -182,23 +182,15 @@ class ProjectX:
         # Parse HTML
         soup = BeautifulSoup(content, 'html.parser')
 
-        # Create proper HTML structure
-        html_template = f"""<?xml version='1.0' encoding='utf-8'?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <title>{title}</title>
-    <link rel="stylesheet" type="text/css" href="../style/nav.css"/>
-</head>
-<body>
-    <h1>{title}</h1>
-    <div class="chapter-content">
-        {soup.prettify()}
-    </div>
-</body>
-</html>"""
+        # Return body-only HTML for ebooklib to embed
+        body_html = f"""
+<h1>{title}</h1>
+<div class="chapter-content">
+{soup.prettify()}
+</div>
+"""
 
-        return html_template
+        return body_html
 
     def _get_kindle_css(self) -> str:
         """
