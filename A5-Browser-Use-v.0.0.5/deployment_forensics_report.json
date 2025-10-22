@@ -1,0 +1,343 @@
+{
+  "timestamp": "2025-10-22T00:25:35.151922",
+  "health_score": 20,
+  "summary": {
+    "total_signals": 4,
+    "critical_issues": 2,
+    "high_issues": 1,
+    "medium_issues": 1,
+    "low_issues": 0
+  },
+  "root_cause_analysis": {
+    "hypotheses": [
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.76,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1138) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      }
+    ],
+    "confidence_scores": [
+      0.76,
+      0.85,
+      0.95,
+      0.7
+    ]
+  },
+  "immediate_fixes": [
+    {
+      "priority": "critical",
+      "issue": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "fix": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+    },
+    {
+      "priority": "critical",
+      "issue": "OpenAI API key not configured",
+      "fix": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "test_command": "echo 'Test command not available'"
+    },
+    {
+      "priority": "high",
+      "issue": "FastAPI/uvicorn not running",
+      "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "test_command": "ps aux | grep python"
+    }
+  ],
+  "preventive_measures": [
+    "Implement comprehensive health checks",
+    "Add environment variable validation on startup",
+    "Set up monitoring and alerting",
+    "Create automated deployment tests",
+    "Document all dependencies and their versions"
+  ],
+  "redeploy_command": "railway up",
+  "system_snapshot": {
+    "memory_usage": {
+      "total": 16795742208,
+      "available": 16024522752,
+      "percent": 4.6,
+      "used": 771219456,
+      "free": 10171236352
+    },
+    "cpu_usage": 0.0,
+    "disk_usage": {
+      "total": 135152996352,
+      "used": 6328651776,
+      "free": 121935659008,
+      "percent": 4.682583403121383
+    },
+    "network_connections": [
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:26500",
+        "raddr": "192.168.37.125:36782",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": ":::26053",
+        "raddr": null,
+        "status": "LISTEN"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": "::ffff:172.30.0.2:26053",
+        "raddr": "::ffff:192.168.37.149:58298",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:2375",
+        "raddr": "192.168.37.125:50328",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:26500",
+        "raddr": "192.168.37.149:49364",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "0.0.0.0:26500",
+        "raddr": null,
+        "status": "LISTEN"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": "::ffff:172.30.0.2:26053",
+        "raddr": "::ffff:192.168.37.149:58296",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:2375",
+        "raddr": "192.168.37.149:56776",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "0.0.0.0:2375",
+        "raddr": null,
+        "status": "LISTEN"
+      }
+    ],
+    "processes": [
+      {
+        "pid": 1,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.03455656754028694,
+        "name": "pod-daemon"
+      },
+      {
+        "pid": 324,
+        "cpu_percent": 0.0,
+        "memory_percent": 1.4771530363321947,
+        "name": "node"
+      },
+      {
+        "pid": 565,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.5603919304927689,
+        "name": "npm exec typescript-language-server --stdio"
+      },
+      {
+        "pid": 790,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.007608785513457674,
+        "name": "sh"
+      },
+      {
+        "pid": 791,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.35002852075210894,
+        "name": "node"
+      },
+      {
+        "pid": 1000,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.0,
+        "name": "git"
+      },
+      {
+        "pid": 1119,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.0,
+        "name": "git"
+      },
+      {
+        "pid": 1126,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.0552856306378479,
+        "name": "bash"
+      },
+      {
+        "pid": 1138,
+        "cpu_percent": 0.0,
+        "memory_percent": 0.13868962568921087,
+        "name": "python3"
+      }
+    ],
+    "environment_vars": {
+      "SHELL": "/bin/bash",
+      "NVM_INC": "/home/ubuntu/.nvm/versions/node/v22.20.0/include/node",
+      "HOSTNAME": "cursor",
+      "AUTH_TOKEN": "641901037669cb68e3e9e8a9ce913e6e5a1ecac7157eaf04265946e0b4efdd24",
+      "PWD": "/workspace/A5-Browser-Use-v.0.0.5",
+      "PORT": "26053",
+      "HOME": "/home/ubuntu",
+      "LANG": "en_US.UTF-8",
+      "CARGO_HOME": "/usr/local/cargo",
+      "FORCE_COLOR": "0",
+      "NVM_DIR": "/home/ubuntu/.nvm",
+      "CURSOR_AGENT": "1",
+      "TERM": "dumb",
+      "RUSTUP_HOME": "/usr/local/rustup",
+      "AGENT_RG_PATH": "/exec-daemon/rg",
+      "USER": "ubuntu",
+      "GIT_DISCOVERY_ACROSS_FILESYSTEM": "0",
+      "SHLVL": "1",
+      "NVM_CD_FLAGS": "",
+      "NO_COLOR": "1",
+      "EXEC_DAEMON_LSP_ENABLED": "true",
+      "RUST_VERSION": "1.82.0",
+      "PS1": "\\[\u001b[36m\\]\\W\\[\u001b[0m\\] $ ",
+      "LC_ALL": "en_US.UTF-8",
+      "PATH": "/usr/local/cargo/bin:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.20.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NVM_BIN": "/home/ubuntu/.nvm/versions/node/v22.20.0/bin",
+      "EXEC_DAEMON_BROWSER_ENABLED": "false",
+      "OLDPWD": "/workspace/A5-Browser-Use-v.0.0.5",
+      "_": "/usr/bin/python3"
+    },
+    "port_bindings": [
+      {
+        "port": 26053,
+        "address": "::",
+        "pid": 324
+      },
+      {
+        "port": 26500,
+        "address": "0.0.0.0",
+        "pid": null
+      },
+      {
+        "port": 2375,
+        "address": "0.0.0.0",
+        "pid": null
+      }
+    ]
+  },
+  "diagnostic_signals": [
+    {
+      "signal": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "source": "environment_configuration",
+      "chain": [
+        "railway_deployment",
+        "env_vars",
+        "missing_vars"
+      ],
+      "remedy": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.INFRASTRUCTURE",
+      "timestamp": "2025-10-22 00:25:35.151207"
+    },
+    {
+      "signal": "FastAPI/uvicorn not running",
+      "source": "web_server",
+      "chain": [
+        "railway_runtime",
+        "fastapi",
+        "not_running"
+      ],
+      "remedy": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "severity": "Severity.HIGH",
+      "layer": "DiagnosticLayer.RUNTIME",
+      "timestamp": "2025-10-22 00:25:35.151508"
+    },
+    {
+      "signal": "OpenAI API key not configured",
+      "source": "api_key_missing",
+      "chain": [
+        "external_integrations",
+        "openai",
+        "missing_key"
+      ],
+      "remedy": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.EXTERNAL_INTEGRATIONS",
+      "timestamp": "2025-10-22 00:25:35.151528"
+    },
+    {
+      "signal": "Process python3 (PID 1138) recently started",
+      "source": "process_uptime",
+      "chain": [
+        "health_recovery",
+        "process_lifecycle",
+        "recent_restart"
+      ],
+      "remedy": "Check application logs for crash causes",
+      "confidence": 0.7,
+      "severity": "Severity.MEDIUM",
+      "layer": "DiagnosticLayer.HEALTH_RECOVERY",
+      "timestamp": "2025-10-22 00:25:35.151615"
+    }
+  ]
+}

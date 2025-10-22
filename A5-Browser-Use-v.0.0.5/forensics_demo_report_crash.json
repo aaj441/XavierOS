@@ -1,0 +1,764 @@
+{
+  "timestamp": "2025-10-22T00:26:18.041646",
+  "health_score": 0,
+  "summary": {
+    "total_signals": 12,
+    "critical_issues": 6,
+    "high_issues": 3,
+    "medium_issues": 3,
+    "low_issues": 0
+  },
+  "root_cause_analysis": {
+    "hypotheses": [
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.31129600000000013,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.38912000000000013,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.4864000000000001,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.4864000000000001,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.6080000000000001,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Missing required environment variables: ['OPENAI_API_KEY']",
+        "likely_cause": "environment_configuration",
+        "trigger_chain": [
+          "railway_deployment",
+          "env_vars",
+          "missing_vars"
+        ],
+        "fix": "Set environment variables: OPENAI_API_KEY",
+        "confidence": 0.76,
+        "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+      },
+      {
+        "symptom": "FastAPI/uvicorn not running",
+        "likely_cause": "web_server",
+        "trigger_chain": [
+          "railway_runtime",
+          "fastapi",
+          "not_running"
+        ],
+        "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+        "confidence": 0.85,
+        "test_command": "ps aux | grep python"
+      },
+      {
+        "symptom": "OpenAI API key not configured",
+        "likely_cause": "api_key_missing",
+        "trigger_chain": [
+          "external_integrations",
+          "openai",
+          "missing_key"
+        ],
+        "fix": "Set OPENAI_API_KEY environment variable",
+        "confidence": 0.95,
+        "test_command": "echo 'Test command not available'"
+      },
+      {
+        "symptom": "Process python3 (PID 1326) recently started",
+        "likely_cause": "process_uptime",
+        "trigger_chain": [
+          "health_recovery",
+          "process_lifecycle",
+          "recent_restart"
+        ],
+        "fix": "Check application logs for crash causes",
+        "confidence": 0.7,
+        "test_command": "echo 'Test command not available'"
+      }
+    ],
+    "confidence_scores": [
+      0.31129600000000013,
+      0.85,
+      0.95,
+      0.7,
+      0.38912000000000013,
+      0.85,
+      0.95,
+      0.7,
+      0.4864000000000001,
+      0.85,
+      0.95,
+      0.7,
+      0.4864000000000001,
+      0.85,
+      0.95,
+      0.7,
+      0.6080000000000001,
+      0.85,
+      0.95,
+      0.7,
+      0.76,
+      0.85,
+      0.95,
+      0.7
+    ]
+  },
+  "immediate_fixes": [
+    {
+      "priority": "critical",
+      "issue": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "fix": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+    },
+    {
+      "priority": "critical",
+      "issue": "OpenAI API key not configured",
+      "fix": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "test_command": "echo 'Test command not available'"
+    },
+    {
+      "priority": "critical",
+      "issue": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "fix": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+    },
+    {
+      "priority": "critical",
+      "issue": "OpenAI API key not configured",
+      "fix": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "test_command": "echo 'Test command not available'"
+    },
+    {
+      "priority": "critical",
+      "issue": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "fix": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "test_command": "echo $OPENAI_API_KEY && echo $PORT"
+    },
+    {
+      "priority": "critical",
+      "issue": "OpenAI API key not configured",
+      "fix": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "test_command": "echo 'Test command not available'"
+    },
+    {
+      "priority": "high",
+      "issue": "FastAPI/uvicorn not running",
+      "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "test_command": "ps aux | grep python"
+    },
+    {
+      "priority": "high",
+      "issue": "FastAPI/uvicorn not running",
+      "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "test_command": "ps aux | grep python"
+    },
+    {
+      "priority": "high",
+      "issue": "FastAPI/uvicorn not running",
+      "fix": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "test_command": "ps aux | grep python"
+    }
+  ],
+  "preventive_measures": [
+    "Implement comprehensive health checks",
+    "Add environment variable validation on startup",
+    "Set up monitoring and alerting",
+    "Create automated deployment tests",
+    "Document all dependencies and their versions"
+  ],
+  "redeploy_command": "railway up",
+  "system_snapshot": {
+    "memory_usage": {
+      "total": 16795742208,
+      "available": 15996915712,
+      "percent": 4.8,
+      "used": 798826496,
+      "free": 9195778048
+    },
+    "cpu_usage": 0.0,
+    "disk_usage": {
+      "total": 135152996352,
+      "used": 7165849600,
+      "free": 121098461184,
+      "percent": 5.302027919038407
+    },
+    "network_connections": [
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:2375",
+        "raddr": "192.168.37.149:56776",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": ":::26053",
+        "raddr": null,
+        "status": "LISTEN"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": "::ffff:172.30.0.2:26053",
+        "raddr": "::ffff:192.168.37.149:58296",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:52982",
+        "raddr": "1.1.1.1:53",
+        "status": "TIME_WAIT"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "0.0.0.0:26500",
+        "raddr": null,
+        "status": "LISTEN"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:26500",
+        "raddr": "192.168.37.125:36782",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET6",
+        "type": "SOCK_STREAM",
+        "laddr": "::ffff:172.30.0.2:26053",
+        "raddr": "::ffff:192.168.37.149:58298",
+        "status": "TIME_WAIT"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "0.0.0.0:2375",
+        "raddr": null,
+        "status": "LISTEN"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:26500",
+        "raddr": "192.168.37.149:49364",
+        "status": "ESTABLISHED"
+      },
+      {
+        "family": "AF_INET",
+        "type": "SOCK_STREAM",
+        "laddr": "172.30.0.2:2375",
+        "raddr": "192.168.37.125:50328",
+        "status": "ESTABLISHED"
+      }
+    ],
+    "processes": [
+      {
+        "cpu_percent": 0.0,
+        "name": "pod-daemon",
+        "pid": 1,
+        "memory_percent": 0.03455656754028694
+      },
+      {
+        "cpu_percent": 1.0,
+        "name": "node",
+        "pid": 324,
+        "memory_percent": 1.5576061882837873
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "npm exec typescript-language-server --stdio",
+        "pid": 565,
+        "memory_percent": 0.5603919304927689
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "sh",
+        "pid": 790,
+        "memory_percent": 0.007608785513457674
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "node",
+        "pid": 791,
+        "memory_percent": 0.35002852075210894
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "git",
+        "pid": 1000,
+        "memory_percent": 0.0
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "git",
+        "pid": 1119,
+        "memory_percent": 0.0
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "bash",
+        "pid": 1314,
+        "memory_percent": 0.05596847036341461
+      },
+      {
+        "cpu_percent": 0.0,
+        "name": "python3",
+        "pid": 1326,
+        "memory_percent": 0.14712757372657098
+      }
+    ],
+    "environment_vars": {
+      "SHELL": "/bin/bash",
+      "NVM_INC": "/home/ubuntu/.nvm/versions/node/v22.20.0/include/node",
+      "HOSTNAME": "cursor",
+      "AUTH_TOKEN": "641901037669cb68e3e9e8a9ce913e6e5a1ecac7157eaf04265946e0b4efdd24",
+      "PWD": "/workspace/A5-Browser-Use-v.0.0.5",
+      "PORT": "26053",
+      "HOME": "/home/ubuntu",
+      "LANG": "en_US.UTF-8",
+      "CARGO_HOME": "/usr/local/cargo",
+      "FORCE_COLOR": "0",
+      "NVM_DIR": "/home/ubuntu/.nvm",
+      "CURSOR_AGENT": "1",
+      "TERM": "dumb",
+      "RUSTUP_HOME": "/usr/local/rustup",
+      "AGENT_RG_PATH": "/exec-daemon/rg",
+      "USER": "ubuntu",
+      "GIT_DISCOVERY_ACROSS_FILESYSTEM": "0",
+      "SHLVL": "1",
+      "NVM_CD_FLAGS": "",
+      "NO_COLOR": "1",
+      "EXEC_DAEMON_LSP_ENABLED": "true",
+      "RUST_VERSION": "1.82.0",
+      "PS1": "\\[\u001b[36m\\]\\W\\[\u001b[0m\\] $ ",
+      "LC_ALL": "en_US.UTF-8",
+      "PATH": "/usr/local/cargo/bin:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.20.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NVM_BIN": "/home/ubuntu/.nvm/versions/node/v22.20.0/bin",
+      "EXEC_DAEMON_BROWSER_ENABLED": "false",
+      "OLDPWD": "/workspace/A5-Browser-Use-v.0.0.5/Python_server",
+      "_": "/usr/bin/python3"
+    },
+    "port_bindings": [
+      {
+        "port": 26053,
+        "address": "::",
+        "pid": 324
+      },
+      {
+        "port": 26500,
+        "address": "0.0.0.0",
+        "pid": null
+      },
+      {
+        "port": 2375,
+        "address": "0.0.0.0",
+        "pid": null
+      }
+    ]
+  },
+  "diagnostic_signals": [
+    {
+      "signal": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "source": "environment_configuration",
+      "chain": [
+        "railway_deployment",
+        "env_vars",
+        "missing_vars"
+      ],
+      "remedy": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.INFRASTRUCTURE",
+      "timestamp": "2025-10-22 00:26:16.031741"
+    },
+    {
+      "signal": "FastAPI/uvicorn not running",
+      "source": "web_server",
+      "chain": [
+        "railway_runtime",
+        "fastapi",
+        "not_running"
+      ],
+      "remedy": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "severity": "Severity.HIGH",
+      "layer": "DiagnosticLayer.RUNTIME",
+      "timestamp": "2025-10-22 00:26:16.031907"
+    },
+    {
+      "signal": "OpenAI API key not configured",
+      "source": "api_key_missing",
+      "chain": [
+        "external_integrations",
+        "openai",
+        "missing_key"
+      ],
+      "remedy": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.EXTERNAL_INTEGRATIONS",
+      "timestamp": "2025-10-22 00:26:16.031923"
+    },
+    {
+      "signal": "Process python3 (PID 1326) recently started",
+      "source": "process_uptime",
+      "chain": [
+        "health_recovery",
+        "process_lifecycle",
+        "recent_restart"
+      ],
+      "remedy": "Check application logs for crash causes",
+      "confidence": 0.7,
+      "severity": "Severity.MEDIUM",
+      "layer": "DiagnosticLayer.HEALTH_RECOVERY",
+      "timestamp": "2025-10-22 00:26:16.031994"
+    },
+    {
+      "signal": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "source": "environment_configuration",
+      "chain": [
+        "railway_deployment",
+        "env_vars",
+        "missing_vars"
+      ],
+      "remedy": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.INFRASTRUCTURE",
+      "timestamp": "2025-10-22 00:26:17.035848"
+    },
+    {
+      "signal": "FastAPI/uvicorn not running",
+      "source": "web_server",
+      "chain": [
+        "railway_runtime",
+        "fastapi",
+        "not_running"
+      ],
+      "remedy": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "severity": "Severity.HIGH",
+      "layer": "DiagnosticLayer.RUNTIME",
+      "timestamp": "2025-10-22 00:26:17.036008"
+    },
+    {
+      "signal": "OpenAI API key not configured",
+      "source": "api_key_missing",
+      "chain": [
+        "external_integrations",
+        "openai",
+        "missing_key"
+      ],
+      "remedy": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.EXTERNAL_INTEGRATIONS",
+      "timestamp": "2025-10-22 00:26:17.036024"
+    },
+    {
+      "signal": "Process python3 (PID 1326) recently started",
+      "source": "process_uptime",
+      "chain": [
+        "health_recovery",
+        "process_lifecycle",
+        "recent_restart"
+      ],
+      "remedy": "Check application logs for crash causes",
+      "confidence": 0.7,
+      "severity": "Severity.MEDIUM",
+      "layer": "DiagnosticLayer.HEALTH_RECOVERY",
+      "timestamp": "2025-10-22 00:26:17.036086"
+    },
+    {
+      "signal": "Missing required environment variables: ['OPENAI_API_KEY']",
+      "source": "environment_configuration",
+      "chain": [
+        "railway_deployment",
+        "env_vars",
+        "missing_vars"
+      ],
+      "remedy": "Set environment variables: OPENAI_API_KEY",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.INFRASTRUCTURE",
+      "timestamp": "2025-10-22 00:26:18.040441"
+    },
+    {
+      "signal": "FastAPI/uvicorn not running",
+      "source": "web_server",
+      "chain": [
+        "railway_runtime",
+        "fastapi",
+        "not_running"
+      ],
+      "remedy": "Start FastAPI with: uvicorn main:app --host 0.0.0.0 --port $PORT",
+      "confidence": 0.85,
+      "severity": "Severity.HIGH",
+      "layer": "DiagnosticLayer.RUNTIME",
+      "timestamp": "2025-10-22 00:26:18.040646"
+    },
+    {
+      "signal": "OpenAI API key not configured",
+      "source": "api_key_missing",
+      "chain": [
+        "external_integrations",
+        "openai",
+        "missing_key"
+      ],
+      "remedy": "Set OPENAI_API_KEY environment variable",
+      "confidence": 0.95,
+      "severity": "Severity.CRITICAL",
+      "layer": "DiagnosticLayer.EXTERNAL_INTEGRATIONS",
+      "timestamp": "2025-10-22 00:26:18.040662"
+    },
+    {
+      "signal": "Process python3 (PID 1326) recently started",
+      "source": "process_uptime",
+      "chain": [
+        "health_recovery",
+        "process_lifecycle",
+        "recent_restart"
+      ],
+      "remedy": "Check application logs for crash causes",
+      "confidence": 0.7,
+      "severity": "Severity.MEDIUM",
+      "layer": "DiagnosticLayer.HEALTH_RECOVERY",
+      "timestamp": "2025-10-22 00:26:18.040730"
+    }
+  ]
+}
