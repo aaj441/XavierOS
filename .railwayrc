@@ -12,3 +12,4 @@ build_command=pnpm install && pnpm prisma generate && pnpm build
 
 # Start command  
 start_command=pnpm start
+

@@ -3,9 +3,18 @@ import reactRefresh from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { config } from "vinxi/plugins/config";
-import { env } from "./src/server/env";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { consoleForwardPlugin } from "./vite-console-forward-plugin";
+
+// Safe environment access for build time
+const getBaseUrl = () => {
+  try {
+    const baseUrl = process.env.BASE_URL;
+    return baseUrl ? [baseUrl.split("://")[1]] : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 export default createApp({
   server: {
@@ -30,9 +39,7 @@ export default createApp({
         config("allowedHosts", {
           // @ts-ignore
           server: {
-            allowedHosts: env.BASE_URL
-              ? [env.BASE_URL.split("://")[1]]
-              : undefined,
+            allowedHosts: getBaseUrl(),
           },
         }),
         tsConfigPaths({
@@ -50,9 +57,7 @@ export default createApp({
         config("allowedHosts", {
           // @ts-ignore
           server: {
-            allowedHosts: env.BASE_URL
-              ? [env.BASE_URL.split("://")[1]]
-              : undefined,
+            allowedHosts: getBaseUrl(),
           },
         }),
         tsConfigPaths({
@@ -69,9 +74,7 @@ export default createApp({
         config("allowedHosts", {
           // @ts-ignore
           server: {
-            allowedHosts: env.BASE_URL
-              ? [env.BASE_URL.split("://")[1]]
-              : undefined,
+            allowedHosts: getBaseUrl(),
           },
         }),
         tsConfigPaths({

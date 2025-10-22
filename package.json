@@ -7,7 +7,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "vinxi dev",
-    "build": "tsr generate && vinxi build",
+    "build": "NODE_ENV=production tsr generate && NODE_ENV=production vinxi build",
     "start": "vinxi start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . -c eslint.config.mjs --max-warnings 0",

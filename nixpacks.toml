@@ -9,3 +9,4 @@ cmds = ["pnpm prisma generate", "pnpm build"]
 
 [start]
 cmd = "pnpm start"
+

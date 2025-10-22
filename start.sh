@@ -24,3 +24,4 @@ pnpm prisma generate
 # Start the application
 echo "🌟 Starting XavierOS application..."
 pnpm start
+
