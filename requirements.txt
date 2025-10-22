@@ -9,7 +9,8 @@ pydantic==2.10.5
 
 # Lucy - WCAG Compliance Checker
 beautifulsoup4==4.12.3
-lxml==5.1.0
+# Use a prebuilt wheel version compatible with modern Python
+lxml==6.0.2
 
 # Project X - eBook Formatter
 ebooklib==0.18

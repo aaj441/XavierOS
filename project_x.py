@@ -132,7 +132,9 @@ class ProjectX:
                 file_name=f'chapter_{idx}.xhtml',
                 lang=metadata.language
             )
-            epub_chapter.content = content_html
+            # Ensure content is bytes and non-empty for lxml/ebooklib
+            encoded_content = (content_html or "").encode("utf-8")
+            epub_chapter.set_content(encoded_content)
 
             # Add chapter to book
             book.add_item(epub_chapter)
