@@ -1,0 +1,14 @@
+# Railway Build Configuration
+# This file helps Railway identify this as a Node.js project
+
+# Node.js version
+node_version=20
+
+# Package manager
+package_manager=pnpm
+
+# Build command
+build_command=pnpm install && pnpm prisma generate && pnpm build
+
+# Start command  
+start_command=pnpm start
