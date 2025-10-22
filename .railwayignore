@@ -1,4 +1,4 @@
-# Railway ignore file
+# Railway ignore file - Focus on Python app only
 A5-Browser-Use-v.0.0.5/
 backup-A5-Browser-Use/
 node_modules/
@@ -7,6 +7,24 @@ node_modules/
 .output/
 .vinxi/
 .codapt/
+components/
+docker/
+docs/
+routes/
+server/
+src/
+stores/
+trpc/
 *.log
 *.tmp
 *.cache
+*.js
+*.ts
+*.tsx
+*.json
+!requirements.txt
+!main.py
+!Procfile
+!runtime.txt
+!nixpacks.toml
+!railway.json

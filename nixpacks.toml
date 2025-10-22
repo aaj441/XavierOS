@@ -2,10 +2,13 @@
 python = "3.11"
 
 [phases.setup]
-nixPkgs = ["python3", "python3-pip"]
+nixPkgs = ["python3", "python3-pip", "python3-venv"]
 
 [phases.install]
 cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'Python FastAPI app ready'"]
 
 [start]
 cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
