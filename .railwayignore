@@ -1,0 +1,12 @@
+# Railway ignore file
+A5-Browser-Use-v.0.0.5/
+backup-A5-Browser-Use/
+node_modules/
+.git/
+.vscode/
+.output/
+.vinxi/
+.codapt/
+*.log
+*.tmp
+*.cache
