@@ -117,6 +117,8 @@ async def check_wcag(request: WCAGCheckRequest = Body(...)):
 
         return report
 
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Error in Lucy WCAG check: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"WCAG check failed: {str(e)}")
@@ -193,6 +195,8 @@ async def generate_ebook(request: eBookRequest = Body(...)):
 
         return result
 
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Error in Project X eBook generation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"eBook generation failed: {str(e)}")
@@ -207,6 +211,9 @@ async def download_ebook(request: eBookRequest = Body(...)):
     """
     try:
         logger.info(f"Project X generating eBook for download: {request.metadata.title}")
+
+        if not request.chapters or len(request.chapters) == 0:
+            raise HTTPException(status_code=400, detail="At least one chapter is required")
 
         result = create_ebook(
             metadata=request.metadata,
@@ -233,7 +240,7 @@ async def download_ebook(request: eBookRequest = Body(...)):
         )
 
     except HTTPException:
-        raise
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Error in Project X download: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"eBook download failed: {str(e)}")
@@ -304,6 +311,13 @@ async def check_and_generate(request: WCAGAndEbookRequest = Body(...)):
     try:
         logger.info("Starting combined workflow: WCAG check + eBook generation")
 
+        # Validate inputs
+        if not request.html_content or not request.html_content.strip():
+            raise HTTPException(status_code=400, detail="html_content cannot be empty")
+        
+        if not request.ebook_request.chapters or len(request.ebook_request.chapters) == 0:
+            raise HTTPException(status_code=400, detail="At least one chapter is required")
+
         # Step 1: Check WCAG compliance
         wcag_report = check_wcag_compliance(request.html_content)
         logger.info(f"WCAG check complete: {wcag_report.total_issues} issues, score: {wcag_report.score}")
@@ -324,6 +338,8 @@ async def check_and_generate(request: WCAGAndEbookRequest = Body(...)):
             "workflow_status": "completed"
         }
 
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions as-is
     except Exception as e:
         logger.error(f"Error in combined workflow: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Workflow failed: {str(e)}")

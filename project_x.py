@@ -5,12 +5,21 @@ Generates Kindle-friendly eBooks in various formats (EPUB, MOBI, AZW3)
 
 from typing import Optional, List, Dict
 from pydantic import BaseModel
-from ebooklib import epub
 from bs4 import BeautifulSoup
 import logging
 import io
 import base64
 from datetime import datetime
+import zipfile
+import xml.etree.ElementTree as ET
+
+# Try to import ebooklib, fall back to basic implementation if not available
+try:
+    from ebooklib import epub
+    EBOOKLIB_AVAILABLE = True
+except ImportError:
+    EBOOKLIB_AVAILABLE = False
+    logging.warning("ebooklib not available, using basic EPUB implementation")
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +86,19 @@ class ProjectX:
         Returns:
             EPUB file as bytes
         """
+        if EBOOKLIB_AVAILABLE:
+            return self._generate_epub_with_ebooklib(metadata, chapters, enable_toc, enable_ncx)
+        else:
+            return self._generate_epub_basic(metadata, chapters, enable_toc, enable_ncx)
+
+    def _generate_epub_with_ebooklib(
+        self,
+        metadata: eBookMetadata,
+        chapters: List[Chapter],
+        enable_toc: bool = True,
+        enable_ncx: bool = True
+    ) -> bytes:
+        """Generate EPUB using ebooklib library"""
         book = epub.EpubBook()
 
         # Set metadata
@@ -167,6 +189,134 @@ class ProjectX:
         epub_data.seek(0)
 
         return epub_data.read()
+
+    def _generate_epub_basic(
+        self,
+        metadata: eBookMetadata,
+        chapters: List[Chapter],
+        enable_toc: bool = True,
+        enable_ncx: bool = True
+    ) -> bytes:
+        """Generate basic EPUB without ebooklib dependency"""
+        # Create a basic EPUB structure
+        epub_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(epub_buffer, 'w', zipfile.ZIP_DEFLATED) as epub_zip:
+            # Add mimetype (must be first and uncompressed)
+            epub_zip.writestr('mimetype', 'application/epub+zip', compress_type=zipfile.ZIP_STORED)
+            
+            # Add META-INF/container.xml
+            container_xml = '''<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+    <rootfiles>
+        <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+    </rootfiles>
+</container>'''
+            epub_zip.writestr('META-INF/container.xml', container_xml)
+            
+            # Sort chapters by order
+            sorted_chapters = sorted(chapters, key=lambda c: c.order)
+            
+            # Generate content.opf
+            book_id = metadata.isbn or f"id-{datetime.now().timestamp()}"
+            content_opf = self._generate_content_opf(metadata, sorted_chapters, book_id)
+            epub_zip.writestr('OEBPS/content.opf', content_opf)
+            
+            # Generate toc.ncx if enabled
+            if enable_ncx:
+                toc_ncx = self._generate_toc_ncx(metadata, sorted_chapters, book_id)
+                epub_zip.writestr('OEBPS/toc.ncx', toc_ncx)
+            
+            # Add CSS
+            css_content = self._get_kindle_css()
+            epub_zip.writestr('OEBPS/style.css', css_content)
+            
+            # Add chapters
+            for idx, chapter in enumerate(sorted_chapters, 1):
+                content_html = self._format_chapter_html_basic(chapter.content, chapter.title)
+                epub_zip.writestr(f'OEBPS/chapter_{idx}.xhtml', content_html)
+        
+        epub_buffer.seek(0)
+        return epub_buffer.read()
+
+    def _generate_content_opf(self, metadata: eBookMetadata, chapters: List[Chapter], book_id: str) -> str:
+        """Generate content.opf file"""
+        chapter_items = []
+        chapter_refs = []
+        
+        for idx, chapter in enumerate(chapters, 1):
+            chapter_items.append(f'    <item id="chapter_{idx}" href="chapter_{idx}.xhtml" media-type="application/xhtml+xml"/>')
+            chapter_refs.append(f'    <itemref idref="chapter_{idx}"/>')
+        
+        return f'''<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier id="BookId">{book_id}</dc:identifier>
+        <dc:title>{metadata.title}</dc:title>
+        <dc:creator>{metadata.author}</dc:creator>
+        <dc:language>{metadata.language}</dc:language>
+        {f'<dc:publisher>{metadata.publisher}</dc:publisher>' if metadata.publisher else ''}
+        {f'<dc:description>{metadata.description}</dc:description>' if metadata.description else ''}
+        <meta name="cover" content="cover"/>
+    </metadata>
+    <manifest>
+        <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+        <item id="style" href="style.css" media-type="text/css"/>
+{chr(10).join(chapter_items)}
+    </manifest>
+    <spine toc="ncx">
+{chr(10).join(chapter_refs)}
+    </spine>
+</package>'''
+
+    def _generate_toc_ncx(self, metadata: eBookMetadata, chapters: List[Chapter], book_id: str) -> str:
+        """Generate toc.ncx file"""
+        nav_points = []
+        
+        for idx, chapter in enumerate(chapters, 1):
+            nav_points.append(f'''    <navPoint id="navPoint-{idx}" playOrder="{idx}">
+        <navLabel>
+            <text>{chapter.title}</text>
+        </navLabel>
+        <content src="chapter_{idx}.xhtml"/>
+    </navPoint>''')
+        
+        return f'''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+    <head>
+        <meta name="dtb:uid" content="{book_id}"/>
+        <meta name="dtb:depth" content="1"/>
+        <meta name="dtb:totalPageCount" content="0"/>
+        <meta name="dtb:maxPageNumber" content="0"/>
+    </head>
+    <docTitle>
+        <text>{metadata.title}</text>
+    </docTitle>
+    <navMap>
+{chr(10).join(nav_points)}
+    </navMap>
+</ncx>'''
+
+    def _format_chapter_html_basic(self, content: str, title: str) -> str:
+        """Format chapter HTML for basic EPUB"""
+        # Parse HTML
+        soup = BeautifulSoup(content, 'html.parser')
+        
+        return f'''<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{title}</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <h1>{title}</h1>
+    <div class="chapter-content">
+        {soup.prettify()}
+    </div>
+</body>
+</html>'''
 
     def _format_chapter_html(self, content: str, title: str) -> str:
         """
