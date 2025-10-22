@@ -9,6 +9,8 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import base64
 
@@ -42,30 +44,76 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # ===========================
 # Health Check Endpoints
 # ===========================
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    """Root endpoint - API information"""
-    return {
-        "name": "XavierOS",
-        "description": "WCAG Machine and eBook Generator for personal use",
-        "version": "1.0.0",
-        "endpoints": {
-            "health": "/health",
-            "lucy": {
-                "check_wcag": "/lucy/check",
-                "description": "WCAG compliance checker"
-            },
-            "project_x": {
-                "generate_ebook": "/project-x/generate",
-                "description": "Kindle-friendly eBook generator"
-            }
-        }
-    }
+    """Root endpoint - Frontend portal"""
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>XavierOS - WCAG Machine & eBook Generator</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <h1>XavierOS</h1>
+                <p class="subtitle">WCAG Machine & eBook Generator</p>
+            </header>
+            
+            <main class="main-content">
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="window.location.href='/lucy'">
+                        <div class="tool-icon">🔍</div>
+                        <h2>Lucy</h2>
+                        <p class="tool-description">WCAG 2.1 AA Compliance Checker</p>
+                        <ul class="tool-features">
+                            <li>Check images for alt text</li>
+                            <li>Verify heading hierarchy</li>
+                            <li>Validate link accessibility</li>
+                            <li>Check form labels</li>
+                            <li>Verify color contrast</li>
+                        </ul>
+                        <button class="tool-button">Start Lucy</button>
+                    </div>
+                    
+                    <div class="tool-card" onclick="window.location.href='/project-x'">
+                        <div class="tool-icon">📚</div>
+                        <h2>Project X</h2>
+                        <p class="tool-description">Kindle-friendly eBook Generator</p>
+                        <ul class="tool-features">
+                            <li>Generate EPUB format eBooks</li>
+                            <li>Multiple chapters support</li>
+                            <li>Table of contents</li>
+                            <li>Cover image support</li>
+                            <li>Rich metadata</li>
+                        </ul>
+                        <button class="tool-button">Start Project X</button>
+                    </div>
+                </div>
+            </main>
+            
+            <footer class="footer">
+                <p>XavierOS v1.0.0 - Personal WCAG & eBook Tools</p>
+                <div class="footer-links">
+                    <a href="/docs">API Docs</a>
+                    <a href="/health">Health Check</a>
+                </div>
+            </footer>
+        </div>
+    </body>
+    </html>
+    """
 
 
 @app.get("/health")
@@ -120,6 +168,69 @@ async def check_wcag(request: WCAGCheckRequest = Body(...)):
     except Exception as e:
         logger.error(f"Error in Lucy WCAG check: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"WCAG check failed: {str(e)}")
+
+
+@app.get("/lucy", response_class=HTMLResponse)
+def lucy_interface():
+    """Lucy WCAG Checker Interface"""
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lucy - WCAG Compliance Checker | XavierOS</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <div class="header-content">
+                    <h1>🔍 Lucy</h1>
+                    <p class="subtitle">WCAG 2.1 AA Compliance Checker</p>
+                    <a href="/" class="back-button">← Back to XavierOS</a>
+                </div>
+            </header>
+            
+            <main class="main-content">
+                <div class="tool-interface">
+                    <div class="input-section">
+                        <h2>Check HTML for WCAG Compliance</h2>
+                        <form id="wcag-form">
+                            <div class="form-group">
+                                <label for="html-content">HTML Content:</label>
+                                <textarea 
+                                    id="html-content" 
+                                    name="html_content" 
+                                    placeholder="Paste your HTML content here..."
+                                    rows="10"
+                                ></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="url">URL (Optional):</label>
+                                <input 
+                                    type="url" 
+                                    id="url" 
+                                    name="url" 
+                                    placeholder="https://example.com"
+                                >
+                            </div>
+                            <button type="submit" class="submit-button">Check WCAG Compliance</button>
+                        </form>
+                    </div>
+                    
+                    <div class="results-section" id="results" style="display: none;">
+                        <h2>WCAG Compliance Report</h2>
+                        <div id="report-content"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <script src="/static/script.js"></script>
+    </body>
+    </html>
+    """
 
 
 @app.get("/lucy/info")
@@ -237,6 +348,135 @@ async def download_ebook(request: eBookRequest = Body(...)):
     except Exception as e:
         logger.error(f"Error in Project X download: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"eBook download failed: {str(e)}")
+
+
+@app.get("/project-x", response_class=HTMLResponse)
+def project_x_interface():
+    """Project X eBook Generator Interface"""
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Project X - eBook Generator | XavierOS</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <div class="header-content">
+                    <h1>📚 Project X</h1>
+                    <p class="subtitle">Kindle-friendly eBook Generator</p>
+                    <a href="/" class="back-button">← Back to XavierOS</a>
+                </div>
+            </header>
+            
+            <main class="main-content">
+                <div class="tool-interface">
+                    <div class="input-section">
+                        <h2>Generate Your eBook</h2>
+                        <form id="ebook-form">
+                            <div class="form-section">
+                                <h3>Book Metadata</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="book-title">Title *</label>
+                                        <input type="text" id="book-title" name="title" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="book-author">Author</label>
+                                        <input type="text" id="book-author" name="author" value="Unknown Author">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="book-language">Language</label>
+                                        <select id="book-language" name="language">
+                                            <option value="en">English</option>
+                                            <option value="es">Spanish</option>
+                                            <option value="fr">French</option>
+                                            <option value="de">German</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="book-publisher">Publisher</label>
+                                        <input type="text" id="book-publisher" name="publisher">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="book-description">Description</label>
+                                    <textarea id="book-description" name="description" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="book-isbn">ISBN</label>
+                                    <input type="text" id="book-isbn" name="isbn">
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h3>Chapters</h3>
+                                <div id="chapters-container">
+                                    <div class="chapter-item">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Chapter Title</label>
+                                                <input type="text" name="chapter_title" placeholder="Chapter 1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Order</label>
+                                                <input type="number" name="chapter_order" value="1" min="1">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Chapter Content (HTML)</label>
+                                            <textarea name="chapter_content" rows="5" placeholder="<p>Your chapter content here...</p>"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" id="add-chapter" class="add-button">+ Add Chapter</button>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h3>Output Options</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ebook-format">Format</label>
+                                        <select id="ebook-format" name="format">
+                                            <option value="epub">EPUB</option>
+                                            <option value="mobi">MOBI</option>
+                                            <option value="azw3">AZW3</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" name="enable_toc" checked> Table of Contents
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" name="enable_ncx" checked> NCX Navigation
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="submit-button">Generate eBook</button>
+                        </form>
+                    </div>
+                    
+                    <div class="results-section" id="results" style="display: none;">
+                        <h2>eBook Generation Results</h2>
+                        <div id="report-content"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <script src="/static/script.js"></script>
+    </body>
+    </html>
+    """
 
 
 @app.get("/project-x/info")
