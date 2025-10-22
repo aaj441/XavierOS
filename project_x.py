@@ -132,7 +132,8 @@ class ProjectX:
                 file_name=f'chapter_{idx}.xhtml',
                 lang=metadata.language
             )
-            epub_chapter.content = content_html
+            # Set content as bytes
+            epub_chapter.content = content_html.encode('utf-8')
 
             # Add chapter to book
             book.add_item(epub_chapter)
@@ -179,8 +180,15 @@ class ProjectX:
         Returns:
             Formatted HTML
         """
-        # Parse HTML
+        # Parse HTML to get just the content
         soup = BeautifulSoup(content, 'html.parser')
+        
+        # Extract body content if exists, otherwise use the entire soup
+        body_content = soup.find('body')
+        if body_content:
+            content_html = ''.join(str(tag) for tag in body_content.children)
+        else:
+            content_html = str(soup)
 
         # Create proper HTML structure
         html_template = f"""<?xml version='1.0' encoding='utf-8'?>
@@ -193,7 +201,7 @@ class ProjectX:
 <body>
     <h1>{title}</h1>
     <div class="chapter-content">
-        {soup.prettify()}
+        {content_html}
     </div>
 </body>
 </html>"""

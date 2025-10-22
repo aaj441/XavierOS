@@ -117,6 +117,8 @@ async def check_wcag(request: WCAGCheckRequest = Body(...)):
 
         return report
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Lucy WCAG check: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"WCAG check failed: {str(e)}")
@@ -193,6 +195,8 @@ async def generate_ebook(request: eBookRequest = Body(...)):
 
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Project X eBook generation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"eBook generation failed: {str(e)}")
