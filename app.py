@@ -1,124 +1,267 @@
 """
-XavierOS - WCAG Machine and eBook Generator
-Main FastAPI application with Lucy (WCAG Checker) and Project X (eBook Formatter)
+XavierOS - WCAG Machine, eBook Generator & CGP Archetype Engine
+Production-ready FastAPI application
 """
 
 import os
+import sys
 import logging
-from typing import Optional
-from fastapi import FastAPI, HTTPException, Body
+from typing import Optional, List, Dict
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import base64
 
-# Import Lucy, Project X, and CGP Engine
-from lucy import check_wcag_compliance, WCAGReport
-from project_x import (
-    create_ebook,
-    eBookMetadata,
-    Chapter,
-    eBookRequest,
-    eBookResponse
-)
-from cgp_engine import (
-    CGPArchetypeEngine,
-    ArchetypeProfile,
-    ArchetypeRecommendation,
-    UserArchetypeProfile
-)
-from pathlib import Path
+# Get the absolute path to the application directory
+BASE_DIR = Path(__file__).resolve().parent
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+
+# Log startup information
+logger.info(f"Starting XavierOS from directory: {BASE_DIR}")
+logger.info(f"Python version: {sys.version}")
+logger.info(f"Working directory: {os.getcwd()}")
+
+# Import Lucy, Project X, and CGP Engine with error handling
+try:
+    from lucy import check_wcag_compliance, WCAGReport
+    logger.info("✓ Lucy module loaded successfully")
+except Exception as e:
+    logger.error(f"✗ Failed to load Lucy: {e}")
+    raise
+
+try:
+    from project_x import (
+        create_ebook,
+        eBookMetadata,
+        Chapter,
+        eBookRequest,
+        eBookResponse
+    )
+    logger.info("✓ Project X module loaded successfully")
+except Exception as e:
+    logger.error(f"✗ Failed to load Project X: {e}")
+    raise
+
+try:
+    from cgp_engine import (
+        CGPArchetypeEngine,
+        ArchetypeProfile,
+        ArchetypeRecommendation,
+        UserArchetypeProfile
+    )
+    logger.info("✓ CGP Engine module loaded successfully")
+except Exception as e:
+    logger.error(f"✗ Failed to load CGP Engine: {e}")
+    raise
 
 # Initialize FastAPI app
 app = FastAPI(
     title="XavierOS - WCAG Machine, eBook Generator & CGP Archetype Engine",
     description="Personal WCAG compliance checker, Kindle-friendly eBook generator, and care archetype system",
-    version="2.0.0"
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Initialize CGP Archetype Engine
-cgp_engine = CGPArchetypeEngine()
-
-# Configure CORS
+# Configure CORS - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development - adjust for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Initialize CGP Archetype Engine with error handling
+try:
+    cgp_engine = CGPArchetypeEngine()
+    logger.info(f"✓ CGP Engine initialized with {len(cgp_engine.archetypes)} archetypes")
+except Exception as e:
+    logger.error(f"✗ Failed to initialize CGP Engine: {e}")
+    cgp_engine = None
+
+# Check if static directory exists
+static_dir = BASE_DIR / "static"
+if static_dir.exists():
+    logger.info(f"✓ Static directory found: {static_dir}")
+    # Mount static files BEFORE defining routes
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+else:
+    logger.warning(f"✗ Static directory not found: {static_dir}")
 
 
 # ===========================
-# Health Check Endpoints
+# Root & Health Endpoints
 # ===========================
 
 @app.get("/", response_class=HTMLResponse)
-def read_root():
+async def serve_frontend():
     """Serve the frontend UI"""
-    try:
-        with open("static/index.html", "r") as f:
-            return f.read()
-    except Exception:
-        return """
-        <html>
-            <body>
-                <h1>XavierOS - v2.0.0</h1>
-                <p>WCAG Machine, eBook Generator, and CGP Archetype Engine</p>
-                <p><a href="/docs">API Documentation</a></p>
-            </body>
-        </html>
-        """
+    index_path = BASE_DIR / "static" / "index.html"
+
+    if index_path.exists():
+        try:
+            with open(index_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            logger.info("✓ Serving frontend from static/index.html")
+            return HTMLResponse(content=content)
+        except Exception as e:
+            logger.error(f"Error reading index.html: {e}")
+
+    # Fallback HTML if frontend not found
+    logger.warning("Frontend not found, serving fallback HTML")
+    return HTMLResponse(content="""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XavierOS - API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { margin-top: 0; }
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover { text-decoration: underline; }
+        .endpoints {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        .endpoint {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧬 XavierOS v2.0.0</h1>
+        <p><strong>WCAG Machine, eBook Generator & CGP Archetype Engine</strong></p>
+
+        <div class="endpoints">
+            <h2>Available Endpoints</h2>
+
+            <div class="endpoint">
+                <strong>📚 API Documentation</strong><br>
+                <a href="/docs">/docs</a> - Interactive Swagger UI
+            </div>
+
+            <div class="endpoint">
+                <strong>💚 Health Check</strong><br>
+                <a href="/health">/health</a> - Service status
+            </div>
+
+            <div class="endpoint">
+                <strong>✓ Lucy - WCAG Checker</strong><br>
+                <code>POST /lucy/check</code> - Check HTML compliance<br>
+                <a href="/lucy/info">GET /lucy/info</a> - Lucy capabilities
+            </div>
+
+            <div class="endpoint">
+                <strong>📖 Project X - eBook Generator</strong><br>
+                <code>POST /project-x/generate</code> - Generate eBook<br>
+                <a href="/project-x/info">GET /project-x/info</a> - Project X capabilities
+            </div>
+
+            <div class="endpoint">
+                <strong>🧘 CGP - Archetype Engine</strong><br>
+                <a href="/cgp/archetypes">GET /cgp/archetypes</a> - List all archetypes<br>
+                <code>POST /cgp/recommend</code> - Get recommendations<br>
+                <a href="/cgp/info">GET /cgp/info</a> - CGP capabilities
+            </div>
+        </div>
+
+        <p style="margin-top: 20px; text-align: center;">
+            <a href="/docs">View Full API Documentation →</a>
+        </p>
+    </div>
+</body>
+</html>
+    """)
 
 
 @app.get("/api")
-def api_info():
+async def api_info():
     """API information endpoint"""
     return {
         "name": "XavierOS",
-        "description": "WCAG Machine, eBook Generator, and CGP Archetype Engine for personal use",
+        "description": "WCAG Machine, eBook Generator, and CGP Archetype Engine",
         "version": "2.0.0",
+        "status": "operational",
         "endpoints": {
-            "health": "/health",
             "frontend": "/",
+            "health": "/health",
+            "documentation": "/docs",
             "lucy": {
-                "check_wcag": "/lucy/check",
-                "description": "WCAG compliance checker"
+                "check": "POST /lucy/check",
+                "info": "GET /lucy/info"
             },
             "project_x": {
-                "generate_ebook": "/project-x/generate",
-                "description": "Kindle-friendly eBook generator"
+                "generate": "POST /project-x/generate",
+                "download": "POST /project-x/download",
+                "info": "GET /project-x/info"
             },
             "cgp": {
-                "list_archetypes": "/cgp/archetypes",
-                "get_archetype": "/cgp/archetype/{name}",
-                "recommend": "/cgp/recommend",
-                "download_pdf": "/cgp/pdf/{name}",
-                "description": "CGP Archetype Engine for personalized care rituals"
+                "list": "GET /cgp/archetypes",
+                "get": "GET /cgp/archetype/{name}",
+                "recommend": "POST /cgp/recommend",
+                "pdf": "GET /cgp/pdf/{name}",
+                "info": "GET /cgp/info"
             }
         }
     }
 
 
 @app.get("/health")
-def health_check():
-    """Health check endpoint for Railway"""
-    return {
+async def health_check():
+    """Health check endpoint for monitoring"""
+    health_status = {
         "status": "healthy",
         "service": "XavierOS",
-        "lucy": "operational",
-        "project_x": "operational",
-        "cgp_engine": "operational",
-        "archetypes_loaded": len(cgp_engine.archetypes)
+        "version": "2.0.0",
+        "components": {
+            "lucy": "operational",
+            "project_x": "operational",
+            "cgp_engine": "operational" if cgp_engine else "unavailable",
+        }
     }
+
+    if cgp_engine:
+        health_status["archetypes_loaded"] = len(cgp_engine.archetypes)
+
+    return health_status
 
 
 # ===========================
@@ -128,7 +271,7 @@ def health_check():
 class WCAGCheckRequest(BaseModel):
     """Request for WCAG compliance check"""
     html_content: str
-    url: Optional[str] = None  # Optional URL for reference
+    url: Optional[str] = None
 
 
 @app.post("/lucy/check", response_model=WCAGReport)
@@ -137,39 +280,33 @@ async def check_wcag(request: WCAGCheckRequest = Body(...)):
     Check HTML content for WCAG compliance
 
     **Lucy** analyzes your HTML and identifies accessibility issues based on WCAG 2.1 guidelines.
-
-    - **html_content**: HTML string to check
-    - **url**: (Optional) URL for reference
-
-    Returns a detailed compliance report with:
-    - Total issues count
-    - Issues categorized by severity (A, AA, AAA)
-    - Compliance score (0-100)
-    - Specific suggestions for fixing each issue
     """
     try:
-        logger.info(f"Lucy checking WCAG compliance for content (length: {len(request.html_content)} chars)")
+        logger.info(f"Lucy checking WCAG compliance (content length: {len(request.html_content)} chars)")
 
         if not request.html_content or not request.html_content.strip():
             raise HTTPException(status_code=400, detail="html_content cannot be empty")
 
         report = check_wcag_compliance(request.html_content)
-
-        logger.info(f"Lucy found {report.total_issues} issues, compliance score: {report.score}")
+        logger.info(f"Lucy found {report.total_issues} issues, score: {report.score}")
 
         return report
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Lucy WCAG check: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"WCAG check failed: {str(e)}")
 
 
 @app.get("/lucy/info")
-def lucy_info():
+async def lucy_info():
     """Get information about Lucy - WCAG Compliance Checker"""
     return {
         "name": "Lucy",
         "description": "WCAG 2.1 AA Compliance Checker",
+        "version": "1.0",
+        "status": "operational",
         "capabilities": [
             "Check images for alt text (WCAG 1.1.1)",
             "Verify heading hierarchy (WCAG 2.4.6)",
@@ -182,15 +319,7 @@ def lucy_info():
             "Verify table structure (WCAG 1.3.1)",
             "Check multimedia accessibility (WCAG 1.2.1)"
         ],
-        "compliance_levels": ["A", "AA", "AAA"],
-        "output": {
-            "total_issues": "Number of issues found",
-            "critical_count": "Level A issues",
-            "warning_count": "Level AA issues",
-            "info_count": "Level AAA issues",
-            "score": "Compliance score (0-100)",
-            "issues": "Detailed list of all issues with suggestions"
-        }
+        "compliance_levels": ["A", "AA", "AAA"]
     }
 
 
@@ -203,15 +332,7 @@ async def generate_ebook(request: eBookRequest = Body(...)):
     """
     Generate Kindle-friendly eBook
 
-    **Project X** converts your content into professional eBooks compatible with Kindle and other readers.
-
-    - **metadata**: Book information (title, author, language, etc.)
-    - **chapters**: List of chapters with title and HTML content
-    - **format**: Output format (epub, mobi, azw3)
-    - **enable_toc**: Include table of contents
-    - **enable_ncx**: Include navigation
-
-    Returns base64-encoded eBook file ready for download.
+    **Project X** converts your content into professional eBooks compatible with Kindle.
     """
     try:
         logger.info(f"Project X generating {request.format} eBook: {request.metadata.title}")
@@ -219,7 +340,6 @@ async def generate_ebook(request: eBookRequest = Body(...)):
         if not request.chapters or len(request.chapters) == 0:
             raise HTTPException(status_code=400, detail="At least one chapter is required")
 
-        # Generate eBook
         result = create_ebook(
             metadata=request.metadata,
             chapters=request.chapters,
@@ -229,26 +349,24 @@ async def generate_ebook(request: eBookRequest = Body(...)):
         )
 
         if result.success:
-            logger.info(f"Project X successfully generated eBook: {result.filename}")
+            logger.info(f"Project X successfully generated: {result.filename}")
         else:
             logger.error(f"Project X failed: {result.message}")
 
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error in Project X eBook generation: {e}", exc_info=True)
+        logger.error(f"Error in Project X: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"eBook generation failed: {str(e)}")
 
 
 @app.post("/project-x/download")
 async def download_ebook(request: eBookRequest = Body(...)):
-    """
-    Generate and download eBook directly
-
-    Same as /project-x/generate but returns the file as a download attachment.
-    """
+    """Generate and download eBook directly"""
     try:
-        logger.info(f"Project X generating eBook for download: {request.metadata.title}")
+        logger.info(f"Project X download request: {request.metadata.title}")
 
         result = create_ebook(
             metadata=request.metadata,
@@ -261,10 +379,8 @@ async def download_ebook(request: eBookRequest = Body(...)):
         if not result.success:
             raise HTTPException(status_code=500, detail=result.message)
 
-        # Decode base64 file data
         file_bytes = base64.b64decode(result.file_data)
 
-        # Return as downloadable file
         return Response(
             content=file_bytes,
             media_type="application/epub+zip",
@@ -277,57 +393,34 @@ async def download_ebook(request: eBookRequest = Body(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in Project X download: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"eBook download failed: {str(e)}")
+        logger.error(f"Error in download: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
 
 
 @app.get("/project-x/info")
-def project_x_info():
+async def project_x_info():
     """Get information about Project X - eBook Generator"""
     return {
         "name": "Project X",
         "description": "Kindle-friendly eBook Generator",
+        "version": "1.0",
+        "status": "operational",
+        "supported_formats": ["epub"],
         "capabilities": [
             "Generate EPUB format eBooks",
-            "Support for MOBI/AZW3 (via EPUB + conversion)",
             "Automatic table of contents",
             "NCX navigation support",
             "Kindle-optimized CSS styling",
             "Chapter management",
-            "Metadata support (title, author, ISBN, etc.)",
-            "Cover image support",
-            "HTML content formatting"
-        ],
-        "supported_formats": {
-            "epub": "Standard eBook format (fully supported)",
-            "mobi": "Kindle format (via EPUB + Calibre conversion)",
-            "azw3": "Enhanced Kindle format (via EPUB + Calibre conversion)"
-        },
-        "metadata_fields": [
-            "title (required)",
-            "author",
-            "language",
-            "publisher",
-            "description",
-            "cover_image (base64)",
-            "isbn"
-        ],
-        "output": {
-            "success": "Boolean indicating success",
-            "message": "Status message",
-            "file_data": "Base64 encoded eBook file",
-            "filename": "Generated filename",
-            "format": "Output format",
-            "size_bytes": "File size in bytes"
-        }
+            "Metadata support",
+            "Cover image support"
+        ]
     }
 
 
 # ===========================
-# CGP Archetype Engine
+# CGP - Archetype Engine
 # ===========================
-
-from typing import List, Dict
 
 class ArchetypeRecommendRequest(BaseModel):
     """Request for archetype recommendation"""
@@ -338,21 +431,10 @@ class ArchetypeRecommendRequest(BaseModel):
 
 @app.get("/cgp/archetypes", response_model=List[ArchetypeProfile])
 async def list_archetypes():
-    """
-    Get all available CGP care archetypes
+    """Get all available CGP care archetypes"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    **CGP Archetype Engine** provides personalized care archetypes
-    for wellness and ritual experiences.
-
-    Returns a list of all 7 archetypes:
-    - Griefwalker
-    - Fighter
-    - Self-Protector
-    - Seeker
-    - Solo Architect
-    - Connector
-    - Nurturer
-    """
     try:
         archetypes = cgp_engine.get_all_archetypes()
         logger.info(f"Retrieved {len(archetypes)} archetypes")
@@ -364,27 +446,10 @@ async def list_archetypes():
 
 @app.get("/cgp/archetype/{name}", response_model=ArchetypeProfile)
 async def get_archetype(name: str):
-    """
-    Get specific archetype by name
+    """Get specific archetype by name"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    Available archetypes:
-    - Griefwalker
-    - Fighter
-    - Self-Protector
-    - Seeker
-    - Solo Architect
-    - Connector
-    - Nurturer
-
-    Returns complete archetype profile including:
-    - Narrative
-    - Tone
-    - Values
-    - Risks
-    - Features
-    - Ritual text
-    - PDF availability
-    """
     try:
         archetype = cgp_engine.get_archetype(name)
         if not archetype:
@@ -401,20 +466,10 @@ async def get_archetype(name: str):
 
 @app.post("/cgp/recommend", response_model=List[ArchetypeRecommendation])
 async def recommend_archetype(request: ArchetypeRecommendRequest = Body(...)):
-    """
-    Get archetype recommendations based on current state and concerns
+    """Get archetype recommendations based on current state and concerns"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    Analyzes your current state, concerns, and preferences to recommend
-    the most suitable care archetype(s).
-
-    **Request body:**
-    - **current_state**: Your current emotional/care state (e.g., "overwhelmed", "exploring", "grieving")
-    - **concerns**: List of specific concerns (e.g., ["privacy", "burnout", "community support"])
-    - **preferences**: Optional preferences dict
-
-    **Returns:**
-    List of recommended archetypes with confidence scores and reasoning
-    """
     try:
         recommendations = cgp_engine.recommend_archetype(
             current_state=request.current_state,
@@ -422,7 +477,7 @@ async def recommend_archetype(request: ArchetypeRecommendRequest = Body(...)):
             preferences=request.preferences
         )
 
-        logger.info(f"Generated {len(recommendations)} recommendations for state: {request.current_state}")
+        logger.info(f"Generated {len(recommendations)} recommendations")
         return recommendations
     except Exception as e:
         logger.error(f"Error generating recommendations: {e}", exc_info=True)
@@ -431,37 +486,28 @@ async def recommend_archetype(request: ArchetypeRecommendRequest = Body(...)):
 
 @app.get("/cgp/pdf/{name}")
 async def download_archetype_pdf(name: str):
-    """
-    Download archetype PDF guide
+    """Download archetype PDF guide"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    Returns the PDF file for the specified archetype if available.
-    """
     try:
-        # Check if archetype exists
         archetype = cgp_engine.get_archetype(name)
         if not archetype:
             raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
 
         if not archetype.pdf_available:
-            raise HTTPException(status_code=404, detail=f"PDF not available for archetype '{name}'")
+            raise HTTPException(status_code=404, detail=f"PDF not available for '{name}'")
 
-        # Read PDF file
-        pdf_path = Path(f"{name}.pdf")
+        pdf_path = BASE_DIR / f"{name}.pdf"
         if not pdf_path.exists():
-            raise HTTPException(status_code=404, detail=f"PDF file not found for '{name}'")
-
-        with open(pdf_path, "rb") as f:
-            pdf_data = f.read()
+            raise HTTPException(status_code=404, detail=f"PDF file not found")
 
         logger.info(f"Serving PDF for archetype: {name}")
 
-        return Response(
-            content=pdf_data,
+        return FileResponse(
+            path=str(pdf_path),
             media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename={name}.pdf",
-                "Content-Length": str(len(pdf_data))
-            }
+            filename=f"{name}.pdf"
         )
 
     except HTTPException:
@@ -473,20 +519,16 @@ async def download_archetype_pdf(name: str):
 
 @app.get("/cgp/ritual/{name}")
 async def get_archetype_ritual(name: str):
-    """
-    Get the ritual text for a specific archetype
+    """Get the ritual text for a specific archetype"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    Returns just the ritual practice text for quick access.
-    """
     try:
         ritual = cgp_engine.get_ritual_for_archetype(name)
         if not ritual:
             raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
 
-        return {
-            "archetype": name,
-            "ritual": ritual
-        }
+        return {"archetype": name, "ritual": ritual}
     except HTTPException:
         raise
     except Exception as e:
@@ -496,21 +538,16 @@ async def get_archetype_ritual(name: str):
 
 @app.get("/cgp/report/{name}")
 async def get_archetype_report(name: str):
-    """
-    Get comprehensive archetype report
+    """Get comprehensive archetype report"""
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
 
-    Returns detailed report including:
-    - Complete profile
-    - Ritual guidance
-    - Integration suggestions (Lucy, Project X)
-    - Related archetypes
-    """
     try:
         report = cgp_engine.generate_archetype_report(name)
         if not report:
             raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
 
-        logger.info(f"Generated comprehensive report for archetype: {name}")
+        logger.info(f"Generated report for archetype: {name}")
         return report
     except HTTPException:
         raise
@@ -520,40 +557,34 @@ async def get_archetype_report(name: str):
 
 
 @app.get("/cgp/info")
-def cgp_info():
+async def cgp_info():
     """Get information about CGP Archetype Engine"""
+    if not cgp_engine:
+        return {
+            "name": "CGP Archetype Engine",
+            "status": "unavailable",
+            "message": "CGP Engine failed to initialize"
+        }
+
     return {
         "name": "CGP Archetype Engine",
-        "description": "Care archetypes for personalized wellness and ritual experiences",
+        "description": "Care archetypes for personalized wellness",
         "version": "1.0 (Waltz 4 Expansion)",
+        "status": "operational",
         "archetypes": cgp_engine.get_archetype_names(),
+        "total_archetypes": len(cgp_engine.archetypes),
         "capabilities": [
             "7 distinct care archetypes",
             "Personalized recommendations",
             "Daily ritual practices",
             "PDF guides for each archetype",
-            "Integration with Lucy (WCAG) and Project X (eBook)",
-            "Custom ritual creation",
-            "Related archetype discovery"
-        ],
-        "archetype_components": {
-            "narrative": "Core story and approach",
-            "tone": "Communication style",
-            "values": "Key principles",
-            "risks": "What this archetype protects against",
-            "features": "Specific support features",
-            "ritual": "Daily practice text"
-        },
-        "integration": {
-            "lucy": "Ensure archetype content is accessible",
-            "project_x": "Generate personalized archetype eBooks",
-            "future": "Ritual-Union sound therapy integration"
-        }
+            "Integration with Lucy and Project X"
+        ]
     }
 
 
 # ===========================
-# Combined Workflow Endpoints
+# Combined Workflow
 # ===========================
 
 class WCAGAndEbookRequest(BaseModel):
@@ -564,20 +595,13 @@ class WCAGAndEbookRequest(BaseModel):
 
 @app.post("/workflow/check-and-generate")
 async def check_and_generate(request: WCAGAndEbookRequest = Body(...)):
-    """
-    Combined workflow: Check WCAG compliance and generate eBook
-
-    1. Lucy checks the content for WCAG compliance
-    2. Project X generates the eBook
-
-    Returns both the WCAG report and the generated eBook.
-    """
+    """Combined workflow: Check WCAG compliance and generate eBook"""
     try:
         logger.info("Starting combined workflow: WCAG check + eBook generation")
 
         # Step 1: Check WCAG compliance
         wcag_report = check_wcag_compliance(request.html_content)
-        logger.info(f"WCAG check complete: {wcag_report.total_issues} issues, score: {wcag_report.score}")
+        logger.info(f"WCAG check complete: {wcag_report.total_issues} issues")
 
         # Step 2: Generate eBook
         ebook_result = create_ebook(
@@ -601,6 +625,28 @@ async def check_and_generate(request: WCAGAndEbookRequest = Body(...)):
 
 
 # ===========================
+# Startup & Shutdown Events
+# ===========================
+
+@app.on_event("startup")
+async def startup_event():
+    """Log startup information"""
+    logger.info("=" * 60)
+    logger.info("XavierOS v2.0.0 Starting")
+    logger.info("=" * 60)
+    logger.info(f"Base directory: {BASE_DIR}")
+    logger.info(f"Static directory exists: {static_dir.exists()}")
+    logger.info(f"CGP Engine status: {'✓ Loaded' if cgp_engine else '✗ Failed'}")
+    logger.info("=" * 60)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("XavierOS shutting down...")
+
+
+# ===========================
 # Application Entry Point
 # ===========================
 
@@ -610,10 +656,13 @@ if __name__ == "__main__":
     # Get port from environment variable (Railway provides this)
     port = int(os.getenv("PORT", 8000))
 
+    logger.info(f"Starting server on port {port}")
+
     # Bind to 0.0.0.0 to accept external connections (required for Railway)
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
         port=port,
-        log_level="info"
+        log_level="info",
+        access_log=True
     )

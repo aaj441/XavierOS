@@ -1,11 +1,12 @@
-# XavierOS - WCAG Machine & eBook Generator
-# Dependencies for Lucy and Project X
+# XavierOS - WCAG Machine, eBook Generator & CGP Archetype Engine
+# Production-ready dependencies
 
 # FastAPI and server
 fastapi==0.115.6
-uvicorn[standard]==0.22.0
+uvicorn[standard]==0.32.0
 python-dotenv==1.0.1
 pydantic==2.10.5
+aiofiles==24.1.0
 
 # Lucy - WCAG Compliance Checker
 beautifulsoup4==4.12.3
