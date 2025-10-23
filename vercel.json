@@ -3,5 +3,5 @@
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
   "framework": null,
-  "outputDirectory": ".output/public"
+  "outputDirectory": ".output"
 }
