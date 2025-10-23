@@ -8,6 +8,7 @@ import sys
 import logging
 from typing import Optional, List, Dict
 from pathlib import Path
+from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -226,6 +227,7 @@ async def api_info():
             "documentation": "/docs",
             "lucy": {
                 "check": "POST /lucy/check",
+                "export": "POST /export/wcag-report",
                 "info": "GET /lucy/info"
             },
             "project_x": {
@@ -238,9 +240,27 @@ async def api_info():
                 "get": "GET /cgp/archetype/{name}",
                 "recommend": "POST /cgp/recommend",
                 "pdf": "GET /cgp/pdf/{name}",
+                "generate_ebook": "POST /cgp/generate-ebook/{name}",
                 "info": "GET /cgp/info"
+            },
+            "batch": {
+                "all_archetypes": "POST /batch/archetypes-ebooks"
+            },
+            "examples": {
+                "html_samples": "GET /examples/html-samples",
+                "ebook_template": "GET /examples/ebook-template"
+            },
+            "workflows": {
+                "check_and_generate": "POST /workflow/check-and-generate"
             }
-        }
+        },
+        "new_features": [
+            "🚀 Auto-generate archetype eBooks",
+            "🎁 Batch generate all 7 archetype eBooks",
+            "💾 Export WCAG reports as JSON",
+            "📋 HTML examples for testing",
+            "📖 Ready-to-use eBook templates"
+        ]
     }
 
 
@@ -622,6 +642,446 @@ async def check_and_generate(request: WCAGAndEbookRequest = Body(...)):
     except Exception as e:
         logger.error(f"Error in combined workflow: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Workflow failed: {str(e)}")
+
+
+# ===========================
+# Enhanced Features & Integrations
+# ===========================
+
+@app.post("/cgp/generate-ebook/{name}")
+async def generate_archetype_ebook(name: str):
+    """
+    🚀 AUTO-GENERATE ARCHETYPE EBOOK
+
+    Automatically creates a complete, WCAG-compliant eBook for any archetype.
+    Combines CGP + Project X + Lucy for one-click eBook generation.
+    """
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
+
+    try:
+        # Get archetype details
+        archetype = cgp_engine.get_archetype(name)
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{name}' not found")
+
+        logger.info(f"Auto-generating eBook for archetype: {name}")
+
+        # Build chapters from archetype data
+        chapters = []
+
+        # Chapter 1: Introduction
+        intro_html = f"""
+        <h2>Welcome to {name}</h2>
+        <p><strong>{archetype.data.narrative}</strong></p>
+        <p>This guide will help you understand and embrace the {name} archetype in your personal journey.</p>
+        <h3>Your Tone: {archetype.data.tone}</h3>
+        <p>This archetype communicates with a {archetype.data.tone} style, creating a safe and supportive space for your growth.</p>
+        """
+        chapters.append(Chapter(
+            title="Introduction",
+            content=intro_html,
+            order=1
+        ))
+
+        # Chapter 2: Core Values
+        values_html = f"""
+        <h2>Core Values</h2>
+        <p>The {name} archetype is guided by these fundamental principles:</p>
+        <ul>
+        """
+        for value in archetype.data.values:
+            values_html += f"<li><strong>{value.title()}</strong>: This value guides your decisions and actions.</li>"
+        values_html += "</ul>"
+
+        chapters.append(Chapter(
+            title="Core Values",
+            content=values_html,
+            order=2
+        ))
+
+        # Chapter 3: Daily Ritual
+        ritual_html = f"""
+        <h2>Your Daily Ritual</h2>
+        <div style="padding: 20px; background-color: #f3f4f6; border-left: 4px solid #6366f1; margin: 20px 0;">
+            <p style="font-size: 1.2em; font-style: italic; margin: 0;">
+                {archetype.data.ritual}
+            </p>
+        </div>
+        <h3>How to Practice</h3>
+        <p>Set aside 5-10 minutes each day for this ritual. Find a quiet space, breathe deeply, and allow these words to guide you.</p>
+        <ul>
+            <li>Morning: Start your day with intention</li>
+            <li>Evening: Reflect and release</li>
+            <li>Anytime: When you need grounding</li>
+        </ul>
+        """
+        chapters.append(Chapter(
+            title="Daily Ritual Practice",
+            content=ritual_html,
+            order=3
+        ))
+
+        # Chapter 4: Protection & Boundaries
+        risks_html = f"""
+        <h2>What This Archetype Protects You From</h2>
+        <p>The {name} archetype helps you navigate and protect against:</p>
+        <ul>
+        """
+        for risk in archetype.data.risks:
+            risks_html += f"<li><strong>{risk.title()}</strong>: Recognizing and avoiding this pattern</li>"
+        risks_html += """
+        </ul>
+        <h3>Building Healthy Boundaries</h3>
+        <p>Understanding these risks allows you to set appropriate boundaries and maintain your well-being.</p>
+        """
+        chapters.append(Chapter(
+            title="Protection & Boundaries",
+            content=risks_html,
+            order=4
+        ))
+
+        # Chapter 5: Key Features & Support
+        features_html = f"""
+        <h2>Key Features of Your Journey</h2>
+        <p>The {name} archetype offers these specific forms of support:</p>
+        <ul>
+        """
+        for feature in archetype.data.features:
+            features_html += f"<li>{feature}</li>"
+        features_html += """
+        </ul>
+        <h3>Accessing Support</h3>
+        <p>Remember that asking for help aligned with your archetype strengthens your journey rather than weakening it.</p>
+        """
+        chapters.append(Chapter(
+            title="Support Features",
+            content=features_html,
+            order=5
+        ))
+
+        # Chapter 6: Integration & Next Steps
+        closing_html = f"""
+        <h2>Integrating {name} Into Your Life</h2>
+        <h3>Daily Practices</h3>
+        <ul>
+            <li>Morning ritual: Ground yourself with your archetype's values</li>
+            <li>Midday check-in: Are you honoring your boundaries?</li>
+            <li>Evening reflection: How did your archetype guide you today?</li>
+        </ul>
+        <h3>Weekly Reflection</h3>
+        <p>Set aside time each week to journal about:</p>
+        <ul>
+            <li>Moments when you felt aligned with your archetype</li>
+            <li>Challenges that arose and how you responded</li>
+            <li>Growth you're experiencing</li>
+        </ul>
+        <h3>Next Steps</h3>
+        <p>Your journey with the {name} archetype is ongoing. Trust the process, be gentle with yourself, and remember that growth happens in spirals, not straight lines.</p>
+        <p style="text-align: center; margin-top: 30px; font-style: italic;">
+            May your journey with {name} bring you peace, clarity, and wholeness.
+        </p>
+        """
+        chapters.append(Chapter(
+            title="Integration & Next Steps",
+            content=closing_html,
+            order=6
+        ))
+
+        # Create eBook metadata
+        metadata = eBookMetadata(
+            title=f"The {name} Archetype Guide",
+            author="XavierOS CGP System",
+            language="en",
+            publisher="XavierOS",
+            description=f"A comprehensive guide to the {name} care archetype, including daily rituals, core values, and integration practices."
+        )
+
+        # Generate eBook
+        result = create_ebook(
+            metadata=metadata,
+            chapters=chapters,
+            format="epub",
+            enable_toc=True,
+            enable_ncx=True
+        )
+
+        logger.info(f"Auto-generated eBook for {name}: {result.filename}")
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating archetype eBook for {name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate eBook: {str(e)}")
+
+
+@app.post("/batch/archetypes-ebooks")
+async def generate_all_archetype_ebooks():
+    """
+    🎁 BATCH GENERATE ALL ARCHETYPE EBOOKS
+
+    Generates eBooks for all 7 archetypes in one request.
+    Perfect for offline reading or distribution.
+    """
+    if not cgp_engine:
+        raise HTTPException(status_code=503, detail="CGP Engine not available")
+
+    try:
+        logger.info("Batch generating eBooks for all archetypes")
+
+        results = []
+        archetype_names = cgp_engine.get_archetype_names()
+
+        for name in archetype_names:
+            try:
+                # Call the single archetype eBook generator
+                result = await generate_archetype_ebook(name)
+                results.append({
+                    "archetype": name,
+                    "success": result.success,
+                    "filename": result.filename,
+                    "size_bytes": result.size_bytes
+                })
+            except Exception as e:
+                logger.error(f"Failed to generate eBook for {name}: {e}")
+                results.append({
+                    "archetype": name,
+                    "success": False,
+                    "error": str(e)
+                })
+
+        successful = sum(1 for r in results if r.get("success"))
+
+        logger.info(f"Batch generation complete: {successful}/{len(archetype_names)} successful")
+
+        return {
+            "total_archetypes": len(archetype_names),
+            "successful": successful,
+            "failed": len(archetype_names) - successful,
+            "results": results
+        }
+
+    except Exception as e:
+        logger.error(f"Error in batch generation: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Batch generation failed: {str(e)}")
+
+
+@app.get("/examples/html-samples")
+async def get_html_samples():
+    """
+    📋 HTML EXAMPLES FOR TESTING
+
+    Provides sample HTML content for testing Lucy's WCAG compliance checker.
+    """
+    return {
+        "accessible_html": {
+            "title": "✅ Accessible HTML Example",
+            "description": "This HTML follows WCAG 2.1 AA guidelines",
+            "html": """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Page Example</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Our Accessible Website</h1>
+        <nav aria-label="Main navigation">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <article>
+            <h2>About Accessibility</h2>
+            <p>This page demonstrates proper WCAG 2.1 AA compliance.</p>
+
+            <img src="logo.png" alt="Company logo with blue background">
+
+            <h3>Contact Form</h3>
+            <form>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required aria-required="true">
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required aria-required="true">
+
+                <button type="submit">Send Message</button>
+            </form>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Accessible Company</p>
+    </footer>
+</body>
+</html>"""
+        },
+        "inaccessible_html": {
+            "title": "❌ Inaccessible HTML Example",
+            "description": "This HTML has multiple WCAG violations",
+            "html": """<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h3>Welcome</h3>
+    <img src="logo.png">
+    <a href="#">Click here</a>
+    <a href="#">Read more</a>
+    <input type="text">
+    <input type="email">
+    <button>Submit</button>
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Email</td>
+        </tr>
+        <tr>
+            <td>John</td>
+            <td>john@example.com</td>
+        </tr>
+    </table>
+</body>
+</html>"""
+        },
+        "partially_accessible_html": {
+            "title": "⚠️ Partially Accessible HTML",
+            "description": "This HTML has some accessibility features but missing others",
+            "html": """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Page</title>
+</head>
+<body>
+    <h1>Our Products</h1>
+    <div onclick="buyProduct()">
+        <h2>Product Name</h2>
+        <img src="product.jpg" alt="Product image">
+        <p>Click to buy</p>
+    </div>
+
+    <h3>Features</h3>
+    <h5>Specifications</h5>
+
+    <a href="/buy">here</a>
+
+    <form>
+        <input type="text" placeholder="Your name">
+        <input type="email" placeholder="Your email">
+        <button>Subscribe</button>
+    </form>
+</body>
+</html>"""
+        }
+    }
+
+
+@app.get("/examples/ebook-template")
+async def get_ebook_template():
+    """
+    📖 EBOOK TEMPLATE
+
+    Provides a ready-to-use eBook template for quick testing.
+    """
+    return {
+        "metadata": {
+            "title": "My First eBook",
+            "author": "Your Name",
+            "language": "en",
+            "description": "A sample eBook created with XavierOS"
+        },
+        "chapters": [
+            {
+                "title": "Introduction",
+                "content": "<h2>Welcome</h2><p>This is the introduction to my eBook. Here I'll explain what readers can expect.</p>",
+                "order": 1
+            },
+            {
+                "title": "Chapter 1: Getting Started",
+                "content": "<h2>Getting Started</h2><p>In this chapter, we'll cover the basics...</p><ul><li>Point one</li><li>Point two</li><li>Point three</li></ul>",
+                "order": 2
+            },
+            {
+                "title": "Chapter 2: Advanced Topics",
+                "content": "<h2>Advanced Topics</h2><p>Now that you understand the basics, let's dive deeper...</p>",
+                "order": 3
+            },
+            {
+                "title": "Conclusion",
+                "content": "<h2>Conclusion</h2><p>Thank you for reading! Here are the key takeaways...</p>",
+                "order": 4
+            }
+        ],
+        "format": "epub",
+        "enable_toc": True,
+        "enable_ncx": True
+    }
+
+
+@app.post("/export/wcag-report")
+async def export_wcag_report(request: WCAGCheckRequest = Body(...)):
+    """
+    💾 EXPORT WCAG REPORT
+
+    Generates a downloadable WCAG compliance report in JSON format.
+    """
+    try:
+        report = check_wcag_compliance(request.html_content)
+
+        # Create detailed export
+        export_data = {
+            "report_generated": datetime.now().isoformat(),
+            "url": request.url,
+            "summary": {
+                "total_issues": report.total_issues,
+                "compliance_score": report.score,
+                "critical_count": report.critical_count,
+                "warning_count": report.warning_count,
+                "info_count": report.info_count
+            },
+            "issues": [
+                {
+                    "level": issue.level,
+                    "criterion": issue.criterion,
+                    "title": issue.title,
+                    "description": issue.description,
+                    "element": issue.element,
+                    "suggestion": issue.suggestion
+                }
+                for issue in report.issues
+            ],
+            "recommendations": [
+                "Fix all Level A issues first (critical for accessibility)",
+                "Address Level AA issues for enhanced usability",
+                "Consider Level AAA for optimal accessibility" if report.info_count > 0 else "Great work on Level AAA compliance!"
+            ]
+        }
+
+        # Convert to JSON string for download
+        import json
+        json_data = json.dumps(export_data, indent=2)
+
+        return Response(
+            content=json_data,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=wcag_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error exporting WCAG report: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 
 # ===========================
